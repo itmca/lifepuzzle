@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [".team/hooks/update.sh"]
+      }
+    ]
+  }
+}
