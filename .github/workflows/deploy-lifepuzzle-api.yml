@@ -60,12 +60,12 @@ jobs:
             DB_PROD_URL=${{ secrets.DB_PROD_URL }}
             DB_PROD_USERNAME=${{ secrets.DB_PROD_USERNAME }}
             DB_PROD_PASSWORD=${{ secrets.DB_PROD_PASSWORD }}
-            RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
-            RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
+            RABBITMQ_HOST=lifepuzzle-rabbitmq
+            RABBITMQ_PORT=5672
             RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
             RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
-            MAIL_HOST=${{ secrets.MAIL_HOST }}
-            MAIL_PORT=${{ secrets.MAIL_PORT }}
+            MAIL_HOST=smtp.gmail.com
+            MAIL_PORT=587
             MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
             MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
             AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
@@ -75,16 +75,16 @@ jobs:
             DEEPGRAM_ACCESS_KEY=${{ secrets.DEEPGRAM_ACCESS_KEY }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
             SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}
-            OPENAI_API_URI=${{ secrets.OPENAI_API_URI }}
+            OPENAI_API_URI=https://api.openai.com/v1/chat/completions
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-            DEEPGRAM_API_URI=${{ secrets.DEEPGRAM_API_URI }}
+            DEEPGRAM_API_URI=https://api.deepgram.com/v1/listen?model=base&smart_format=true&language=ko&punctuate=true&numerals=true
             DEEPGRAM_API_KEY=${{ secrets.DEEPGRAM_API_KEY }}
             APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}
             APPLE_BUNDLE_ID=${{ secrets.APPLE_BUNDLE_ID }}
             APPLE_PRIVATE_KEY_ID=${{ secrets.APPLE_PRIVATE_KEY_ID }}
             APPLE_PRIVATE_KEY=${{ secrets.APPLE_PRIVATE_KEY }}
             S3_SERVER_HOST=${{ secrets.S3_SERVER_HOST }}
-          tags: ${{ secrets.GHCR_LIFEPUZZLE_API }}:latest
+          tags: ghcr.io/itmca/lifepuzzle-api:latest
 
       - name: SSH into Home Server and Restart Deployment
         uses: appleboy/ssh-action@v1.2.4
@@ -92,7 +92,7 @@ jobs:
           host: ${{ secrets.HOME_SERVER_HOST }}
           username: ${{ secrets.HOME_SERVER_USER }}
           key: ${{ secrets.HOME_SERVER_SSH_KEY }}
-          port: ${{ secrets.HOME_SERVER_PORT }}
+          port: 2022
           script: |
             echo "Restarting deployment..."
             /opt/homebrew/bin/kubectl config use-context prod-app

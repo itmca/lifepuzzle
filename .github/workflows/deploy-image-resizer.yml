@@ -46,8 +46,8 @@ jobs:
           file: apps/backend/services/image-resizer/Dockerfile
           push: true
           tags: |
-            ${{ secrets.GHCR_IMAGE_RESIZER }}:latest
-            ${{ secrets.GHCR_IMAGE_RESIZER }}:${{ steps.current-time.outputs.formattedTime }}
+            ghcr.io/itmca/lifepuzzle-image-resizer:latest
+            ghcr.io/itmca/lifepuzzle-image-resizer:${{ steps.current-time.outputs.formattedTime }}
 
       - name: SSH into Home Server and Deploy with Helm
         uses: appleboy/ssh-action@v1.2.4
@@ -55,10 +55,10 @@ jobs:
           host: ${{ secrets.HOME_SERVER_HOST }}
           username: ${{ secrets.HOME_SERVER_USER }}
           key: ${{ secrets.HOME_SERVER_SSH_KEY }}
-          port: ${{ secrets.HOME_SERVER_PORT }}
+          port: 2022
           script: |
             echo "Deploying image-resizer with Helm..."
-            cd ${{ secrets.HOME_SERVER_WORKSPACE_DIR }}/lifepuzzle
+            cd /Users/jeong/workspace/lifepuzzle
             git pull origin main
             cd apps/backend/infra/helm
             /opt/homebrew/bin/kubectl config use-context prod-app
@@ -67,7 +67,7 @@ jobs:
               --namespace lifepuzzle \
               --create-namespace \
               --values ./lifepuzzle-image-resizer/values-prod.yaml \
-              --set image.repository="${{ secrets.GHCR_IMAGE_RESIZER }}" \
+              --set image.repository="ghcr.io/itmca/lifepuzzle-image-resizer" \
               --set image.tag="${{ steps.current-time.outputs.formattedTime }}" \
               --set image.pullPolicy="Always" \
               --set "imagePullSecrets[0].name=ghcr-secret" \
@@ -80,11 +80,11 @@ jobs:
               --set env.DB_HOST="${{ secrets.DB_HOST }}" \
               --set env.DB_PORT="${{ secrets.DB_PORT }}" \
               --set env.DB_NAME="${{ secrets.DB_NAME }}" \
-              --set env.DB_USER="${{ secrets.DB_USER }}" \
-              --set env.RABBITMQ_HOST="${{ secrets.RABBITMQ_HOST }}" \
-              --set env.RABBITMQ_PORT="${{ secrets.RABBITMQ_PORT }}" \
+              --set env.DB_USER="${{ secrets.DB_PROD_USERNAME }}" \
+              --set env.RABBITMQ_HOST="lifepuzzle-rabbitmq" \
+              --set env.RABBITMQ_PORT="5672" \
               --set env.RABBITMQ_USERNAME="${{ secrets.RABBITMQ_USERNAME }}" \
-              --set env.RABBITMQ_VHOST="${{ secrets.RABBITMQ_VHOST }}" \
+              --set env.RABBITMQ_VHOST="lifepuzzle" \
               --set env.AWS_REGION="${{ secrets.AWS_REGION }}" \
               --set env.AWS_S3_BUCKET="${{ secrets.AWS_S3_BUCKET }}" \
               --set env.PORT="9000" \
