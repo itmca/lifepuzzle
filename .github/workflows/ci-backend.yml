@@ -32,7 +32,7 @@ jobs:
           distribution: 'corretto'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Build with Gradle Wrapper
         run: ./gradlew test build
@@ -52,6 +52,6 @@ jobs:
           distribution: 'corretto'
 
       - name: Generate and submit dependency graph
-        uses: gradle/actions/dependency-submission@v4
+        uses: gradle/actions/dependency-submission@v5
         with:
           build-root-directory: apps/backend
