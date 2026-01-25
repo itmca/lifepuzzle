@@ -45,7 +45,7 @@ git checkout -b feat/LP-123-new-feature
 services/lifepuzzle-api/     # 메인 API (Spring Boot)
 services/image-resizer/      # 이미지 처리 (Go)
 shared/java-common/          # Java 공통 라이브러리
-infra/docker/                # 로컬 개발 환경
+../../infra/docker/          # 로컬 개발 환경 (모노레포 루트)
 tools/scripts/               # 개발 편의 스크립트
 ```
 
@@ -99,7 +99,7 @@ go fmt ./... && go test ./...
 # 브랜치: feat/LP-123-description
 # PR 제목: Add user authentication feature (명령형, 50자 이내)
 
-# 상세 가이드: docs/GIT_WORKFLOW.md 참조
+# 상세 가이드: ../../.team/base/GIT_WORKFLOW.md 참조
 ```
 
 ### PR 제목 작성 가이드 (중요!)
@@ -148,8 +148,8 @@ RabbitMQ Management: http://localhost:15672
 ## 빠른 참조
 
 ### 핵심 문서
-- **[Git Workflow](./docs/GIT_WORKFLOW.md)** - 브랜치 전략 및 커밋 컨벤션
-- **[Versioning](./docs/VERSIONING.md)** - CalVer 버전 관리
+- **[Git Workflow](../../.team/base/GIT_WORKFLOW.md)** - 브랜치 전략 및 커밋 컨벤션
+- **[Versioning](../../docs/VERSIONING.md)** - CalVer 버전 관리
 - **[README.md](./README.md)** - 프로젝트 전체 개요
 
 ### API 문서

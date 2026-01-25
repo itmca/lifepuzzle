@@ -45,3 +45,6 @@ node_modules/
 
 ### Helm ###
 **/charts/
+
+### Build Artifacts ###
+/image-resizer

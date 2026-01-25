@@ -112,7 +112,7 @@ cp .env.example .env
 ./tools/scripts/stop.sh          # Stop when done
 ```
 
-See [tools/scripts/README.md](../tools/scripts/README.md) for detailed script documentation.
+See [tools/scripts/README.md](../apps/backend/tools/scripts/README.md) for detailed script documentation.
 
 #### Manual Docker Compose
 

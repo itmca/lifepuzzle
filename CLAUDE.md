@@ -14,6 +14,8 @@ LifePuzzle Monorepo - 소중한 사람들과의 추억을 기록하는 서비스
 ```
 lifepuzzle/
 ├── .team/                    # 팀 공통 설정 (submodule)
+├── docs/                     # 공통 문서
+├── infra/                    # 인프라 (Docker, Helm)
 ├── apps/
 │   ├── rn/                   # React Native 앱
 │   │   ├── CLAUDE.md         # RN 특화 가이드

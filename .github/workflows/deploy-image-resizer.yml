@@ -60,7 +60,7 @@ jobs:
             echo "Deploying image-resizer with Helm..."
             cd /Users/jeong/workspace/lifepuzzle
             git pull origin main
-            cd apps/backend/infra/helm
+            cd infra/helm
             /opt/homebrew/bin/kubectl config use-context prod-app
 
             /opt/homebrew/bin/helm upgrade --install lifepuzzle-image-resizer ./lifepuzzle-image-resizer \
