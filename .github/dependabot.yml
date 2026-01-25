@@ -5,15 +5,21 @@ updates:
     directory: "/apps/rn"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "Update"
 
   # Backend (Gradle)
   - package-ecosystem: "gradle"
     directory: "/apps/backend"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "Update"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "Update"
