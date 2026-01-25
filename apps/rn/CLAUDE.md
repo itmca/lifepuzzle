@@ -2,6 +2,12 @@
 
 LifePuzzle React Native 프로젝트 작업 가이드
 
+## 공통 가이드라인
+
+Git 규칙은 팀 공통 문서를 참조하세요:
+- **[Git Workflow](../../.team/base/GIT_WORKFLOW.md)** - 브랜치 전략, 커밋 컨벤션
+- **[PR Rules](../../.team/base/PR_RULES.md)** - PR 제목/본문 작성 규칙
+
 ## 프로젝트 컨텍스트
 
 **앱**: 소중한 사람들과의 추억을 모으고 기록하는 모바일 애플리케이션

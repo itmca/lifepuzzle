@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    "apps/rn": {
+      "release-type": "node",
+      "component": "lifepuzzle-rn",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true
+    },
+    "apps/backend": {
+      "release-type": "simple",
+      "component": "lifepuzzle-backend",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true
+    }
+  },
+  "separate-pull-requests": true,
+  "tag-separator": "-",
+  "include-component-in-tag": true,
+  "include-v-in-tag": true
+}
