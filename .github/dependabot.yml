@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # React Native (npm)
+  - package-ecosystem: "npm"
+    directory: "/apps/rn"
+    schedule:
+      interval: "weekly"
+
+  # Backend (Gradle)
+  - package-ecosystem: "gradle"
+    directory: "/apps/backend"
+    schedule:
+      interval: "weekly"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

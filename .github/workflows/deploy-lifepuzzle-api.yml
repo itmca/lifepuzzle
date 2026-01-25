@@ -3,28 +3,31 @@ name: Deploy to Production (lifepuzzle-api)
 on:
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: apps/backend
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
-    
-    permissions: 
+
+    permissions:
       contents: read
       packages: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'corretto'
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-        shell: bash
 
       - name: Build with Gradle
         run: ./gradlew clean build
@@ -46,12 +49,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-  
+
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./services/lifepuzzle-api/Dockerfile
+          context: apps/backend
+          file: apps/backend/services/lifepuzzle-api/Dockerfile
           push: true
           build-args: |
             DB_PROD_URL=${{ secrets.DB_PROD_URL }}

@@ -3,21 +3,25 @@ name: Deploy to Production (image-resizer)
 on:
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: apps/backend
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
-    
-    permissions: 
+
+    permissions:
       contents: read
       packages: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v5
         with:
           go-version: '1.24'
 
@@ -34,12 +38,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-  
+
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./services/image-resizer/Dockerfile
+          context: apps/backend
+          file: apps/backend/services/image-resizer/Dockerfile
           push: true
           tags: |
             ${{ secrets.GHCR_IMAGE_RESIZER }}:latest
@@ -54,19 +58,11 @@ jobs:
           port: ${{ secrets.HOME_SERVER_PORT }}
           script: |
             echo "Deploying image-resizer with Helm..."
-            cd ${{ secrets.HOME_SERVER_WORKSPACE_DIR }}/lifepuzzle-backend
+            cd ${{ secrets.HOME_SERVER_WORKSPACE_DIR }}/lifepuzzle
             git pull origin main
-            cd infra/helm
+            cd apps/backend/infra/helm
             /opt/homebrew/bin/kubectl config use-context prod-app
-            
-            # Debug: Check image information
-            echo "=== DEBUG: Image Information ==="
-            echo "GHCR_IMAGE_RESIZER: ${{ secrets.GHCR_IMAGE_RESIZER }}"
-            echo "Image tag with timestamp: ${{ steps.current-time.outputs.formattedTime }}"
-            echo "Expected full image: ${{ secrets.GHCR_IMAGE_RESIZER }}:${{ steps.current-time.outputs.formattedTime }}"
-            echo "GitHub Actor: ${{ github.actor }}"
-            
-            # Deploy image-resizer using Helm with timestamp tag to force pod replacement
+
             /opt/homebrew/bin/helm upgrade --install lifepuzzle-image-resizer ./lifepuzzle-image-resizer \
               --namespace lifepuzzle \
               --create-namespace \
@@ -95,19 +91,5 @@ jobs:
               --set env.QUEUE_NAME="image-resize-queue" \
               --wait \
               --timeout=10m
-            
+
             echo "Deployment completed successfully!"
-            
-            # Debug: Check deployment and pod status
-            echo "=== DEBUG: Deployment Status ==="
-            /opt/homebrew/bin/kubectl get deployment -n lifepuzzle
-            /opt/homebrew/bin/kubectl get pods -n lifepuzzle -l app.kubernetes.io/name=lifepuzzle-image-resizer
-            
-            echo "=== DEBUG: Pod Events ==="
-            /opt/homebrew/bin/kubectl get events -n lifepuzzle --sort-by='.lastTimestamp' | tail -10
-            
-            echo "=== DEBUG: Pod Description ==="
-            POD_NAME=$(/opt/homebrew/bin/kubectl get pods -n lifepuzzle -l app.kubernetes.io/name=lifepuzzle-image-resizer -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "no-pod")
-            if [ "$POD_NAME" != "no-pod" ]; then
-              /opt/homebrew/bin/kubectl describe pod $POD_NAME -n lifepuzzle
-            fi

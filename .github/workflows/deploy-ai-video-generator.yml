@@ -3,12 +3,16 @@ name: Deploy to Production (ai-video-generator)
 on:
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: apps/backend
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
-    
-    permissions: 
+
+    permissions:
       contents: read
       packages: write
 
@@ -45,16 +49,16 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.HOME_SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          
+
           # Add host to known_hosts
           ssh-keyscan -p ${{ secrets.HOME_SERVER_PORT }} -H ${{ secrets.HOME_SERVER_HOST }} >> ~/.ssh/known_hosts
-          
+
           # Upload JAR file
           echo "Uploading JAR file..."
           scp -i ~/.ssh/deploy_key -P ${{ secrets.HOME_SERVER_PORT }} \
             ${{ env.artifact }} \
             ${{ secrets.HOME_SERVER_USER }}@${{ secrets.HOME_SERVER_HOST }}:/tmp/ai-video-generator.jar
-          
+
           echo "JAR file uploaded successfully"
 
       - name: SSH into Home Server and Deploy Application
@@ -66,12 +70,12 @@ jobs:
           port: ${{ secrets.HOME_SERVER_PORT }}
           script: |
             echo "Deploying ai-video-generator..."
-            
+
             # Create application directories in user space
             mkdir -p $HOME/lifepuzzle/ai-video-generator
             mkdir -p $HOME/lifepuzzle/logs
             mkdir -p $HOME/lifepuzzle/tmp/ai_video
-            
+
             # Create symlinks for compatibility if needed
             if [ ! -d "/opt/lifepuzzle" ] && [ -w "/opt" ]; then
               mkdir -p /opt/lifepuzzle/ai-video-generator
@@ -84,7 +88,7 @@ jobs:
               export LOG_PATH="$HOME/lifepuzzle/logs"
               export TMP_PATH="$HOME/lifepuzzle/tmp/ai_video"
             fi
-            
+
             # Determine deployment directory
             if [ -w "/opt/lifepuzzle/ai-video-generator" ]; then
               DEPLOY_DIR="/opt/lifepuzzle/ai-video-generator"
@@ -93,17 +97,17 @@ jobs:
               DEPLOY_DIR="$HOME/lifepuzzle/ai-video-generator"
               LOG_DIR="$HOME/lifepuzzle/logs"
             fi
-            
+
             echo "Using deployment directory: $DEPLOY_DIR"
             echo "Using log directory: $LOG_DIR"
-            
+
             # Set up JAR file from uploaded location
             cd "$DEPLOY_DIR"
             rm -f ai-video-generator.jar
             mv /tmp/ai-video-generator.jar ai-video-generator.jar
             chmod +x ai-video-generator.jar
             echo "JAR file deployed: $(ls -la ai-video-generator.jar)"
-            
+
             # Create environment file for application startup
             cat > "$DEPLOY_DIR/app.env" <<ENV_EOF
             DB_PROD_URL=${{ secrets.DB_PROD_URL }}
@@ -123,27 +127,27 @@ jobs:
             AI_VIDEO_PROJECT_PATH=${{ secrets.AI_VIDEO_PROJECT_PATH }}
             SERVER_PORT=9001
             ENV_EOF
-            
+
             # Set secure permissions for environment file
             chmod 600 "$DEPLOY_DIR/app.env"
-            
+
             # Create simple startup script
             cat > "$DEPLOY_DIR/start.sh" <<SCRIPT_EOF
             #!/bin/bash
             cd "$DEPLOY_DIR"
-            
+
             # Load environment variables and export them
             set -a  # automatically export all variables
             source ./app.env
             set +a  # stop automatically exporting
-            
+
             nohup java -jar -Xmx2g -Dspring.profiles.active=prod ai-video-generator.jar > "$LOG_DIR/ai-video-generator.log" 2>&1 &
             echo \$! > ai-video-generator.pid
             echo "AI Video Generator started with PID \$(cat ai-video-generator.pid)"
             SCRIPT_EOF
-            
+
             chmod +x "$DEPLOY_DIR/start.sh"
-            
+
             # Stop existing process if running
             if [ -f "$DEPLOY_DIR/ai-video-generator.pid" ]; then
               OLD_PID=$(cat "$DEPLOY_DIR/ai-video-generator.pid")
@@ -154,38 +158,38 @@ jobs:
               fi
               rm -f "$DEPLOY_DIR/ai-video-generator.pid"
             fi
-            
+
             # Start the application
             echo "Starting AI Video Generator..."
             "$DEPLOY_DIR/start.sh"
-            
+
             # Wait for application to start
             sleep 10
-            
+
             # Check deployment status
             echo "=== Deployment Status ==="
             if [ -f "$DEPLOY_DIR/ai-video-generator.pid" ]; then
               PID=$(cat "$DEPLOY_DIR/ai-video-generator.pid")
               if ps -p $PID > /dev/null 2>&1; then
-                echo "✅ Application is running (PID: $PID)"
+                echo "Application is running (PID: $PID)"
               else
-                echo "❌ Application failed to start"
+                echo "Application failed to start"
               fi
             else
-              echo "❌ PID file not found"
+              echo "PID file not found"
             fi
-            
+
             echo "=== Port Check ==="
             lsof -i :9001 || echo "Port 9001 not yet bound"
-            
+
             echo "=== Recent Logs ==="
             tail -n 10 "$LOG_DIR/ai-video-generator.log" 2>/dev/null || echo "No logs yet"
-            
+
             echo "=== Files Summary ==="
             echo "JAR: $(ls -la $DEPLOY_DIR/*.jar 2>/dev/null || echo 'Not found')"
             echo "ENV: $(ls -la $DEPLOY_DIR/app.env 2>/dev/null || echo 'Not found')"
             echo "PID: $(ls -la $DEPLOY_DIR/*.pid 2>/dev/null || echo 'Not found')"
             echo "Deploy Dir: $DEPLOY_DIR"
             echo "Log Dir: $LOG_DIR"
-            
+
             echo "Deployment completed!"
