@@ -1,0 +1,47 @@
+import { AiType } from '../external/ai-photo.type';
+import { StoryType } from './story.type';
+
+export type { StoryType };
+
+export type AgeType =
+  | 'UNCATEGORIZED'
+  | 'UNDER_TEENAGER'
+  | 'TEENAGER'
+  | 'TWENTIES'
+  | 'THIRTY'
+  | 'FORTY'
+  | 'FIFTY'
+  | 'SIXTY'
+  | 'SEVENTY'
+  | 'EIGHTY'
+  | 'NINETY'
+  | 'UPPER_NINETY';
+export type AgeGroupsType = Partial<Record<TagKey, AgeGroupType>>;
+export type AgeGroupType = {
+  startYear: number;
+  endYear: number;
+  galleryCount: number;
+  gallery: GalleryType[];
+};
+export type GalleryType = {
+  id: number;
+  index: number;
+  type: 'IMAGE' | 'VIDEO';
+  url: string;
+  date?: Date;
+  story?: StoryType;
+  tag: TagType;
+};
+export type TagKey = AgeType | AiType;
+export type TagType = {
+  key: TagKey;
+  label: string;
+  count?: number;
+};
+
+// Media 공유 관련 타입
+export type SharePhoto = {
+  type: string | null;
+  uri?: string;
+  uriList?: readonly string[] | string[];
+};

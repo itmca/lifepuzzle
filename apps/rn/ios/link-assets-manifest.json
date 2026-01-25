@@ -1,0 +1,21 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "app/assets/fonts/SUIT-Bold.ttf",
+      "sha1": "260f37817e53e956893d5444564685351c3f344d"
+    },
+    {
+      "path": "app/assets/fonts/SUIT-ExtraBold.ttf",
+      "sha1": "18142924cde92e4044145027170278d06556d017"
+    },
+    {
+      "path": "app/assets/fonts/SUIT-Medium.ttf",
+      "sha1": "1f8cc07eb00d6117f6b3ca52763d367fd20581f2"
+    },
+    {
+      "path": "app/assets/fonts/SUIT-SemiBold.ttf",
+      "sha1": "ab1bd61b305551638ca9d8e9d870f6bcc2c0c1c5"
+    }
+  ]
+}

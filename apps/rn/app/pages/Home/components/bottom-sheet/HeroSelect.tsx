@@ -1,0 +1,43 @@
+import React from 'react';
+import { TouchableOpacity } from 'react-native';
+import { Color } from '../../../../constants/color.constant.ts';
+import { Profile } from '../../../../components/ui/display/Profile';
+import { ContentContainer } from '../../../../components/ui/layout/ContentContainer.tsx';
+import { HeroType } from '../../../../types/core/hero.type';
+import { BodyTextB, BodyTextM } from '../../../../components/ui/base/TextBase';
+import { AdaptiveImage } from '../../../../components/ui/base/ImageBase';
+
+type Props = {
+  item: HeroType;
+  selected?: boolean;
+  onSelect: () => void;
+};
+
+export const HeroSelect = ({
+  item,
+  selected,
+  onSelect,
+}: Props): React.ReactElement => {
+  return (
+    <TouchableOpacity onPress={onSelect}>
+      <ContentContainer gap={8}>
+        <ContentContainer
+          width={52}
+          height={52}
+          alignCenter
+          style={{ borderWidth: selected ? 3 : 0 }}
+          borderColor={Color.MAIN}
+          borderRadius={20}
+          backgroundColor={Color.GREY_100}
+        >
+          {item.imageUrl ? <AdaptiveImage uri={item.imageUrl} /> : <Profile />}
+        </ContentContainer>
+
+        <ContentContainer gap={0} alignCenter>
+          <BodyTextB color={Color.GREY_800}>{item.nickName}</BodyTextB>
+          <BodyTextM color={Color.GREY_400}>{item.name}</BodyTextM>
+        </ContentContainer>
+      </ContentContainer>
+    </TouchableOpacity>
+  );
+};

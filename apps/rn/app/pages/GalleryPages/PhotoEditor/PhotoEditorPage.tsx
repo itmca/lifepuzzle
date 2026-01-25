@@ -1,0 +1,369 @@
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { Image, Platform } from 'react-native';
+
+import { PageContainer } from '../../../components/ui/layout/PageContainer';
+import { PhotoEditorMediaCarousel } from './components/PhotoEditorMediaCarousel';
+import { EditorActionButton } from './components/EditorActionButton';
+import { MediaCarouselPagination } from '../../../components/ui/display/MediaCarouselPagination';
+import { ContentContainer } from '../../../components/ui/layout/ContentContainer.tsx';
+
+import { Color } from '../../../constants/color.constant.ts';
+import {
+  CAROUSEL_WIDTH_PADDED,
+  MAX_PHOTO_EDITOR_CAROUSEL_HEIGHT,
+} from '../../../constants/carousel.constant.ts';
+import { FilterType } from '../../../constants/filter.constant.ts';
+import { useSelectionStore } from '../../../stores/selection.store';
+import { useUIStore } from '../../../stores/ui.store';
+import ImagePicker from 'react-native-image-crop-picker';
+import { CustomAlert } from '../../../components/ui/feedback/CustomAlert';
+import { PhotoFilterBottomSheet } from './components/PhotoFilterBottomSheet';
+import { useCarouselManagement } from '../../../hooks/useCarouselManagement';
+import { useGalleryIndexValidation } from '../../../hooks/useGalleryIndexValidation';
+import { calculateNextIndexAfterDeletion } from '../../../utils/carousel-index.util';
+import { logger } from '../../../utils/logger.util';
+const PhotoEditorPage = (): React.ReactElement => {
+  // React hooks
+  const [contentContainerHeight, setContentContainerHeight] = useState(0);
+  const [filterBottomSheetOpen, setFilterBottomSheetOpen] = useState(false);
+  const isDeletingRef = useRef(false);
+
+  // 글로벌 상태 관리 (Zustand)
+  const {
+    editGalleryItems,
+    setEditGalleryItems,
+    currentGalleryIndex: galleryIndex,
+    setCurrentGalleryIndex: setGalleryIndex,
+  } = useSelectionStore();
+  const isGalleryUploading = useUIStore(state => state.isGalleryUploading);
+
+  // Memoized values for useCarouselManagement
+  const imageSources = useMemo(
+    () =>
+      editGalleryItems.map(item => ({
+        uri: item.node.image.uri,
+        width: item.node.image.width,
+        height: item.node.image.height,
+      })),
+    [editGalleryItems],
+  );
+
+  const firstItemKey = useMemo(
+    () => editGalleryItems[0]?.node.image.uri ?? 'empty',
+    [editGalleryItems],
+  );
+
+  // Custom hooks
+  const { carouselKey, optimalCarouselHeight, imageDimensions, handleScroll } =
+    useCarouselManagement({
+      items: editGalleryItems,
+      currentIndex: galleryIndex,
+      setIndex: setGalleryIndex,
+      carouselWidth: CAROUSEL_WIDTH_PADDED,
+      maxCarouselHeight: MAX_PHOTO_EDITOR_CAROUSEL_HEIGHT,
+      imageSources,
+      firstItemKey,
+      imageDimensionsOptions: {
+        defaultWidth: CAROUSEL_WIDTH_PADDED,
+        defaultHeight: MAX_PHOTO_EDITOR_CAROUSEL_HEIGHT,
+      },
+      isDeletingRef,
+      debugName: 'PhotoEditor',
+    });
+
+  useGalleryIndexValidation({
+    items: editGalleryItems,
+    currentIndex: galleryIndex,
+    setIndex: setGalleryIndex,
+    debugName: 'PhotoEditor',
+  });
+
+  // Memoized values
+  const currentItem = editGalleryItems[galleryIndex];
+  const isCurrentItemVideo = Boolean(
+    currentItem?.node?.image?.playableDuration &&
+    currentItem.node.image.playableDuration > 0,
+  );
+
+  const onCrop = async () => {
+    const image = editGalleryItems.find((e, idx) => idx === galleryIndex);
+
+    if (image && image.node.image.uri) {
+      let width = image.node.image.width;
+      let height = image.node.image.height;
+
+      if (!width || !height) {
+        const size = await Image.getSize(image.node.image.uri);
+        width = size.width;
+        height = size.height;
+      }
+      try {
+        logger.debug(
+          'Image dimensions:',
+          image.node.image.width,
+          image.node.image.height,
+        );
+
+        await ImagePicker.openCropper({
+          mediaType: 'photo',
+          path: image.node.image.uri, // Use the potentially downloaded path
+          width: width,
+          height: height,
+          cropping: true,
+          freeStyleCropEnabled: true,
+          cropperToolbarTitle: '사진 편집',
+          cropperCancelText: '취소', //ios
+          cropperChooseText: '완료', //ios
+          compressImageQuality: 1,
+          cropperActiveWidgetColor: Color.MAIN, //android
+          cropperToolbarWidgetColor: Color.BLACK, //android
+        }).then(response => {
+          const newImageObject = {
+            ...image,
+            node: {
+              ...image.node, // 기존 node 속성들 복사
+              image: {
+                ...image.node.image, // 기존 node.image 속성들 복사
+                uri: response.path, // uri만 새 경로로 업데이트
+                width: response.width,
+                height: response.height,
+                size: response.size ?? image.node.image.fileSize,
+                filename: response.filename ?? image.node.image.filename,
+              },
+            },
+          };
+          const updatedGallery = editGalleryItems.map((e, idx) => {
+            if (idx === galleryIndex) {
+              return newImageObject;
+            } else {
+              return e;
+            }
+          });
+          setEditGalleryItems([...updatedGallery]);
+        });
+      } catch (cropError) {
+        logger.debug('Image crop error:', image.node.image.uri, cropError);
+        // 오류 처리 (예: 해당 이미지는 건너뛰기)
+      }
+    } else {
+      CustomAlert.simpleAlert('크롭할 이미지가 선택되지 않았습니다.');
+    }
+  };
+  const onFilter = () => {
+    setFilterBottomSheetOpen(true);
+  };
+
+  const handleApplyFilter = useCallback(
+    (filter: FilterType, filteredUri?: string) => {
+      const currentItem = editGalleryItems[galleryIndex];
+      if (!currentItem) {
+        return;
+      }
+
+      // 원본 URI 보존 (처음 적용 시에만)
+      const originalUri = currentItem.originalUri ?? currentItem.node.image.uri;
+
+      // 원본 복원
+      if (filter === 'original') {
+        const restoredImageObject = {
+          ...currentItem,
+          originalUri,
+          appliedFilter: 'original',
+          node: {
+            ...currentItem.node,
+            image: {
+              ...currentItem.node.image,
+              uri: originalUri,
+            },
+          },
+        };
+
+        const updatedGallery = editGalleryItems.map((e, idx) =>
+          idx === galleryIndex ? restoredImageObject : e,
+        ) as typeof editGalleryItems;
+        setEditGalleryItems(updatedGallery);
+        return;
+      }
+
+      if (!filteredUri) {
+        logger.warn(
+          '[PhotoEditor] Filter apply requested without filtered URI',
+        );
+        return;
+      }
+
+      const newImageObject = {
+        ...currentItem,
+        originalUri, // 원본 보존
+        appliedFilter: filter,
+        node: {
+          ...currentItem.node,
+          image: {
+            ...currentItem.node.image,
+            uri: filteredUri,
+          },
+        },
+      };
+
+      const updatedGallery = editGalleryItems.map((e, idx) =>
+        idx === galleryIndex ? newImageObject : e,
+      ) as typeof editGalleryItems;
+      setEditGalleryItems(updatedGallery);
+    },
+    [editGalleryItems, galleryIndex, setEditGalleryItems],
+  );
+  const onContentContainerLayout = (event: any) => {
+    const { height } = event.nativeEvent.layout;
+    setContentContainerHeight(height);
+  };
+
+  const handleRemoveItem = useCallback(
+    (index: number) => {
+      if (editGalleryItems.length <= 1) {
+        CustomAlert.simpleAlert('사진은 최소 1장 이상 남겨주세요.');
+        return;
+      }
+
+      CustomAlert.actionAlert({
+        title: '사진을 업로드 목록에서 삭제할까요?',
+        desc: '',
+        actionBtnText: '삭제',
+        action: () => {
+          // 삭제 시작 플래그 설정
+          isDeletingRef.current = true;
+
+          const updatedGallery = editGalleryItems.filter(
+            (_, idx) => idx !== index,
+          );
+
+          // StoryDetailPage 방식: store를 동기적으로 직접 수정
+          const selectionStore = useSelectionStore.getState();
+
+          logger.debug('[PhotoEditor] Before delete:', {
+            deletingIndex: index,
+            currentIndex: galleryIndex,
+            arrayLength: editGalleryItems.length,
+          });
+
+          // 1. 먼저 갤러리 업데이트 (동기적)
+          selectionStore.setEditGalleryItems(updatedGallery);
+
+          // 2. 업데이트된 배열로 인덱스 계산
+          const targetIndex = calculateNextIndexAfterDeletion({
+            deletedIndex: index,
+            currentIndex: galleryIndex,
+            newArrayLength: updatedGallery.length,
+          });
+
+          logger.debug('[PhotoEditor] After delete - setting targetIndex:', {
+            targetIndex,
+            newArrayLength: updatedGallery.length,
+          });
+
+          // 3. 마지막에 인덱스 설정 (동기적)
+          selectionStore.setCurrentGalleryIndex(targetIndex);
+
+          // Carousel 리마운트 완료 후 플래그 해제
+          setTimeout(() => {
+            isDeletingRef.current = false;
+          }, 100);
+        },
+      });
+    },
+    [editGalleryItems, galleryIndex, setEditGalleryItems, setGalleryIndex],
+  );
+
+  // Memoize carousel data to prevent unnecessary re-renders
+  const carouselData = useMemo(
+    () =>
+      editGalleryItems.map((item, index) => ({
+        type:
+          item.node.image.playableDuration &&
+          item.node.image.playableDuration > 0
+            ? 'VIDEO'
+            : 'IMAGE',
+        url: item.node.image.uri,
+        index: index,
+        width: imageDimensions[index]?.width,
+        height: imageDimensions[index]?.height,
+      })),
+    [editGalleryItems, imageDimensions],
+  );
+
+  return (
+    <PageContainer
+      edges={['left', 'right', 'bottom']}
+      isLoading={isGalleryUploading}
+    >
+      <ContentContainer
+        flex={1}
+        alignItems="center"
+        justifyContent="center"
+        paddingVertical={10}
+        onLayout={onContentContainerLayout}
+      >
+        <ContentContainer
+          flex={1}
+          alignItems="center"
+          justifyContent="center"
+          paddingTop={24}
+        >
+          <PhotoEditorMediaCarousel
+            key={carouselKey}
+            data={carouselData}
+            activeIndex={galleryIndex}
+            carouselWidth={CAROUSEL_WIDTH_PADDED}
+            carouselMaxHeight={Math.min(
+              Math.max(contentContainerHeight - 32, 0),
+              optimalCarouselHeight,
+            )}
+            onScroll={handleScroll}
+            onRemove={handleRemoveItem}
+          />
+        </ContentContainer>
+        <ContentContainer
+          alignItems="center"
+          paddingBottom={Platform.OS === 'android' ? 56 : 40}
+          gap={16}
+        >
+          {editGalleryItems.length > 1 && (
+            <MediaCarouselPagination
+              key={`pagination-${galleryIndex}`}
+              visible={true}
+              activeMediaIndexNo={galleryIndex}
+              mediaCount={editGalleryItems.length}
+              containerStyle={{ position: 'relative', top: 0, left: 0 }}
+            />
+          )}
+          <ContentContainer
+            useHorizontalLayout
+            alignItems={'center'}
+            justifyContent={'center'}
+            gap={12}
+          >
+            <EditorActionButton
+              icon="crop"
+              label="자르기"
+              disabled={isCurrentItemVideo}
+              onPress={onCrop}
+            />
+            <EditorActionButton
+              icon="layers"
+              label="필터"
+              disabled={isCurrentItemVideo}
+              onPress={onFilter}
+            />
+          </ContentContainer>
+        </ContentContainer>
+      </ContentContainer>
+
+      <PhotoFilterBottomSheet
+        opened={filterBottomSheetOpen}
+        selectedImage={currentItem}
+        onClose={() => setFilterBottomSheetOpen(false)}
+        onApply={handleApplyFilter}
+      />
+    </PageContainer>
+  );
+};
+export { PhotoEditorPage };
