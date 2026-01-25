@@ -1,0 +1,121 @@
+plugins {
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
+    id 'java'
+    id 'checkstyle'
+}
+
+jar {
+    enabled = false
+}
+
+static def getDate() {
+    new Date().format('yyyy.MM')
+}
+
+group = 'io.itmca'
+version = getDate()
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
+    }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "TarsosDSP repository"
+        url = "https://mvn.0110.be/releases"
+    }
+}
+
+dependencies {
+    // Shared modules
+    implementation project(':shared:java-common')
+
+    // Web
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.thymeleaf
+    implementation libs.spring.boot.starter.webflux
+
+    // AWS
+    implementation libs.spring.cloud.aws.starter.s3
+
+    // Spring Cloud Stream RabbitMQ
+    implementation libs.spring.cloud.stream.rabbit
+
+    // Security
+    implementation libs.spring.boot.starter.security
+    implementation libs.jjwt.api
+    runtimeOnly libs.jjwt.impl
+    runtimeOnly libs.jjwt.jackson
+    implementation libs.nimbus.jose.jwt
+    implementation libs.sentry.spring.boot
+    implementation libs.sentry.logback
+
+    // Data
+    implementation libs.spring.boot.starter.data.jpa
+    runtimeOnly libs.mysql.connector
+
+    // Monitoring
+    implementation libs.spring.boot.starter.actuator
+
+    // Test
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.security.test
+    testImplementation libs.fixture.monkey
+
+    testImplementation libs.spring.boot.testcontainers
+
+    testImplementation libs.testcontainers.junit
+    testImplementation libs.testcontainers.mysql
+    testImplementation libs.database.rider.junit5
+    testImplementation libs.database.rider.spring
+    testImplementation libs.mysql.connector.legacy
+    testImplementation libs.javax.persistence // DBRider 실행 시 오류 해결을 위해 추가되었다.
+
+    // Tool
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    implementation libs.json
+    implementation libs.spring.boot.starter.mail
+    implementation libs.iv.compressor
+    implementation libs.spring.boot.starter.aop
+    implementation libs.tika.core
+    implementation libs.tika.parsers
+
+    // Swagger
+    implementation libs.springdoc.openapi
+
+    implementation libs.flyway.core
+    implementation libs.flyway.mysql
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+task buildZip(type: Zip) {
+    from('src/.platform') {
+        into '.platform'
+    }
+
+    from(bootJar.outputs.files) {
+        into "."
+    }
+    destinationDirectory = layout.buildDirectory.get().asFile
+    archiveFileName = project.name + ".zip"
+}
+
+checkstyle {
+    toolVersion(libs.versions.checkstyle.get())
+    configFile = rootProject.file('tools/checkstyle/checkstyle.xml')
+    maxWarnings = 0
+}

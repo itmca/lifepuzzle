@@ -1,0 +1,37 @@
+plugins {
+    alias(libs.plugins.spring.boot) apply false
+    alias(libs.plugins.spring.dependency.management) apply false
+}
+
+static def getDate() {
+    new Date().format('yyyy.MM')
+}
+
+allprojects {
+    group = 'io.itmca'
+    version = getDate()
+
+    repositories {
+        mavenCentral()
+        maven {
+            name = "TarsosDSP repository"
+            url = "https://mvn.0110.be/releases"
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
+        }
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+}

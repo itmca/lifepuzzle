@@ -1,0 +1,89 @@
+plugins {
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
+    id 'java'
+    id 'checkstyle'
+}
+
+jar {
+    enabled = false
+}
+
+static def getDate() {
+    new Date().format('yyyy.MM')
+}
+
+group = 'io.itmca'
+version = getDate()
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
+    }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "TarsosDSP repository"
+        url = "https://mvn.0110.be/releases"
+    }
+}
+
+dependencies {
+    // Shared modules
+    implementation project(':shared:java-common')
+
+    // Web
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webflux
+
+    // AWS
+    implementation libs.spring.cloud.aws.starter.s3
+
+    // Spring Cloud Stream RabbitMQ
+    implementation libs.spring.cloud.stream.rabbit
+
+    // Data
+    implementation libs.spring.boot.starter.data.jpa
+    runtimeOnly libs.mysql.connector
+
+    // Monitoring
+    implementation libs.spring.boot.starter.actuator
+
+    // Security (for basic auth if needed)
+    implementation libs.spring.boot.starter.security
+
+    // Tool
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    implementation libs.json
+    implementation libs.spring.boot.starter.aop
+
+    // Swagger
+    implementation libs.springdoc.openapi
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+task buildZip(type: Zip) {
+    from('src/.platform') {
+        into '.platform'
+    }
+
+    from(bootJar.outputs.files) {
+        into "."
+    }
+    destinationDirectory = layout.buildDirectory.get().asFile
+    archiveFileName = project.name + ".zip"
+}
+
+checkstyle {
+    toolVersion(libs.versions.checkstyle.get())
+    configFile = rootProject.file('tools/checkstyle/checkstyle.xml')
+    maxWarnings = 0
+}
