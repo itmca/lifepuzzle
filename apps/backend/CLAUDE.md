@@ -55,6 +55,32 @@ tools/scripts/               # 개발 편의 스크립트
 
 ## 개발 패턴
 
+### Service 레이어 규칙 (CQRS)
+
+| 타입 | 반환 | 설명 |
+|------|------|------|
+| **QueryService** | Response DTO OK | 조회 전용, 클라이언트별 변환 불필요 |
+| **WriteService** | 도메인 모델/record | 재사용성 높음, Endpoint에서 변환 |
+
+```java
+// QueryService - Response 직접 반환 OK
+public GalleryQueryResponse getGalleries(Long heroId) { ... }
+
+// WriteService - 도메인 모델 반환, Endpoint에서 변환
+public UploadCompletionResult completeUploads(List<String> fileKeys) { ... }
+
+// Endpoint
+public GalleryUploadCompleteResponse completeUpload(...) {
+    var result = galleryWriteService.completeUploads(request.fileKeys());
+    return GalleryUploadCompleteResponse.from(result);
+}
+```
+
+WriteService용 DTO는 `service/dto/` 패키지에 위치:
+```
+domain/<name>/service/dto/UploadCompletionResult.java
+```
+
 ### Spring Boot API 작업 시
 ```bash
 # 공통 응답 형식 사용

@@ -30,6 +30,7 @@ public class GalleryUploadEndpoint {
   @PostMapping("/v1/galleries/upload-complete")
   @Operation(summary = "업로드 완료 처리", description = "S3 업로드 완료 후 갤러리 상태를 업데이트합니다")
   public GalleryUploadCompleteResponse completeUpload(@Valid @RequestBody GalleryUploadCompleteRequest request) {
-    return galleryWriteService.completeUploads(request.fileKeys());
+    var result = galleryWriteService.completeUploads(request.fileKeys());
+    return GalleryUploadCompleteResponse.from(result);
   }
 }

@@ -4,8 +4,8 @@ import static io.itmca.lifepuzzle.domain.content.type.GalleryType.IMAGE;
 import static io.itmca.lifepuzzle.domain.content.type.GalleryType.VIDEO;
 import static io.itmca.lifepuzzle.global.constants.FileConstant.NEW_STORY_IMAGE_BASE_PATH_FORMAT;
 
-import io.itmca.lifepuzzle.domain.content.endpoint.response.GalleryUploadCompleteResponse;
-import io.itmca.lifepuzzle.domain.content.endpoint.response.dto.GalleryUploadResultDto;
+import io.itmca.lifepuzzle.domain.content.service.dto.UploadCompletionResult;
+import io.itmca.lifepuzzle.domain.content.service.dto.UploadCompletionResult.GalleryResult;
 import io.itmca.lifepuzzle.domain.content.entity.Gallery;
 import io.itmca.lifepuzzle.domain.content.event.PhotoUploadEventPublisher;
 import io.itmca.lifepuzzle.domain.content.repository.GalleryRepository;
@@ -126,19 +126,19 @@ public class GalleryWriteService {
   }
 
   @Transactional
-  public GalleryUploadCompleteResponse completeUploads(List<String> fileKeys) {
-    List<GalleryUploadResultDto> results = new ArrayList<>();
+  public UploadCompletionResult completeUploads(List<String> fileKeys) {
+    List<GalleryResult> results = new ArrayList<>();
     int successCount = 0;
     int failureCount = 0;
 
     for (String fileKey : fileKeys) {
       Optional<Gallery> galleryOpt = galleryRepository.findByUrl(fileKey);
-      
+
       if (galleryOpt.isEmpty()) {
-        results.add(new GalleryUploadResultDto(
-            fileKey, 
-            null, 
-            GalleryStatus.FAILED, 
+        results.add(new GalleryResult(
+            fileKey,
+            null,
+            GalleryStatus.FAILED,
             "Gallery not found for file key"
         ));
         failureCount++;
@@ -146,19 +146,19 @@ public class GalleryWriteService {
       }
 
       Gallery gallery = galleryOpt.get();
-      
+
       try {
         gallery.setGalleryStatus(GalleryStatus.UPLOADED);
         galleryRepository.save(gallery);
-        
-        results.add(new GalleryUploadResultDto(
+
+        results.add(new GalleryResult(
             fileKey,
             gallery.getId(),
             GalleryStatus.UPLOADED,
             "Upload completed successfully"
         ));
         successCount++;
-        
+
         if (gallery.isImage()) {
           photoUploadEventPublisher.publishPhotoUploadEvent(
               gallery.getId(),
@@ -166,12 +166,12 @@ public class GalleryWriteService {
               gallery.getUrl()
           );
         }
-        
+
       } catch (Exception e) {
         gallery.setGalleryStatus(GalleryStatus.FAILED);
         galleryRepository.save(gallery);
-        
-        results.add(new GalleryUploadResultDto(
+
+        results.add(new GalleryResult(
             fileKey,
             gallery.getId(),
             GalleryStatus.FAILED,
@@ -181,7 +181,7 @@ public class GalleryWriteService {
       }
     }
 
-    return new GalleryUploadCompleteResponse(results, successCount, failureCount);
+    return new UploadCompletionResult(results, successCount, failureCount);
   }
 
   public Optional<List<?>> test() {
