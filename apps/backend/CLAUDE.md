@@ -4,9 +4,7 @@ Claude AI 작업 가이드 - LifePuzzle Backend
 
 ## 공통 가이드라인
 
-Git 규칙은 팀 공통 문서를 참조하세요:
-- **[Git Workflow](../../.team/base/GIT_WORKFLOW.md)** - 브랜치 전략, 커밋 컨벤션
-- **[PR Rules](../../.team/base/PR_RULES.md)** - PR 제목/본문 작성 규칙
+Git/PR 규칙은 **[루트 CLAUDE.md](../../CLAUDE.md)** 참조
 
 ## 프로젝트 개요
 
@@ -99,7 +97,7 @@ go fmt ./... && go test ./...
 # 브랜치: feat/LP-123-description
 # PR 제목: Add user authentication feature (명령형, 50자 이내)
 
-# 상세 가이드: ../../.team/base/GIT_WORKFLOW.md 참조
+# 상세 가이드: ../../CLAUDE.md 참조
 ```
 
 ### PR 제목 작성 가이드 (중요!)
@@ -148,7 +146,7 @@ RabbitMQ Management: http://localhost:15672
 ## 빠른 참조
 
 ### 핵심 문서
-- **[Git Workflow](../../.team/base/GIT_WORKFLOW.md)** - 브랜치 전략 및 커밋 컨벤션
+- **[루트 CLAUDE.md](../../CLAUDE.md)** - 브랜치 전략 및 커밋 컨벤션
 - **[Versioning](../../docs/VERSIONING.md)** - CalVer 버전 관리
 - **[README.md](./README.md)** - 프로젝트 전체 개요
 

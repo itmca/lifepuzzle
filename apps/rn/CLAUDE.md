@@ -4,9 +4,7 @@ LifePuzzle React Native 프로젝트 작업 가이드
 
 ## 공통 가이드라인
 
-Git 규칙은 팀 공통 문서를 참조하세요:
-- **[Git Workflow](../../.team/base/GIT_WORKFLOW.md)** - 브랜치 전략, 커밋 컨벤션
-- **[PR Rules](../../.team/base/PR_RULES.md)** - PR 제목/본문 작성 규칙
+Git/PR 규칙은 **[루트 CLAUDE.md](../../CLAUDE.md)** 참조
 
 ## 프로젝트 컨텍스트
 
