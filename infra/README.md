@@ -1,33 +1,31 @@
 # Infrastructure Configuration
 
-This directory contains infrastructure configuration files for the LifePuzzle backend services.
+LifePuzzle 로컬 개발 환경을 위한 인프라 설정
 
 ## Structure
 
 ```bash
 infra/
 ├── docker/                       # Docker Compose setup
-│   ├── docker-compose.yml        # Main compose file
-│   ├── .env                      # Environment variables
+│   ├── docker-compose.yml        # 인프라만 (MySQL + RabbitMQ)
+│   ├── docker-compose.full.yml   # 전체 스택 (앱 포함)
 │   ├── mysql/
 │   │   └── init/
-│   │       └── 01-init.sql       # MySQL initialization script
+│   │       └── 01-init.sql       # MySQL 초기화 스크립트
 │   └── rabbitmq/
-│       ├── rabbitmq.conf         # RabbitMQ configuration
-│       └── definitions.json      # Queue/Exchange definitions
-└── helm/                         # Helm charts
-    ├── lifepuzzle-infrastructure/ # Main infrastructure chart
-    ├── deploy-prod.sh            # Production deployment script
-    └── README.md                 # Helm documentation
+│       ├── rabbitmq.conf         # RabbitMQ 설정
+│       └── definitions.json      # Queue/Exchange 정의
+├── scripts/                      # 개발 유틸리티 스크립트
+└── README.md
 ```
+
+> **Note**: K8s 운영 환경 설정은 [homelab](https://github.com/itmca/homelab) 레포에서 관리합니다.
 
 ## Docker Compose
 
-Two Docker Compose configurations are available for different use cases:
+### Option 1: Infrastructure Only (백엔드 개발용)
 
-### Option 1: Infrastructure Only (Recommended for Backend Development)
-
-Use this when you want to run applications separately (e.g., in IDE for debugging):
+IDE에서 앱을 직접 실행할 때 사용:
 
 ```bash
 cd infra/docker
@@ -36,237 +34,82 @@ docker-compose up -d
 
 **Services:**
 - **MySQL**: `localhost:3306`
-- **RabbitMQ**: 
-  - AMQP: `localhost:5672`
-  - Management UI: `http://localhost:15672`
-
-### Option 2: Full Application Stack (Recommended for Frontend Development)
-
-Use this when you want everything running together for frontend testing:
-
-```bash
-cd infra/docker
-
-# Copy environment file and update AWS credentials
-cp .env.example .env
-# Edit .env file to set your AWS credentials
-
-# Start full stack
-docker-compose -f docker-compose.full.yml up -d
-```
-
-**Services:**
-- **MySQL**: `localhost:3306`
-- **RabbitMQ**: 
-  - AMQP: `localhost:5672`
-  - Management UI: `http://localhost:15672`
-- **LifePuzzle API**: `http://localhost:8080`
-  - Health check: `http://localhost:8080/actuator/health`
-- **Image Resizer**: `http://localhost:9000`
-  - Health check: `http://localhost:9000/health`
-
-### Environment Configuration
-
-Copy and customize the environment file:
-```bash
-cp .env.example .env
-```
-
-**Required for Full Stack:**
-- Set your AWS credentials in .env file for image-resizer service
-- AWS S3 bucket for image storage
-
-### Default Credentials
-
-- **MySQL**:
-  - Root password: `rootpassword`
-  - Database: `lifepuzzle`
-  - User: `lifepuzzle`
-  - Password: `lifepuzzlepass`
-
 - **RabbitMQ**:
-  - User: `lifepuzzle`
-  - Password: `lifepuzzlepass`
-  - Virtual Host: `lifepuzzle`
+  - AMQP: `localhost:5672`
+  - Management UI: `http://localhost:15672`
 
-### Usage Examples
+### Option 2: Full Stack (프론트엔드 개발용)
 
-#### Using Scripts (Recommended)
-
-**For Frontend Developers:**
-```bash
-# First time setup
-./tools/scripts/setup-dev.sh
-
-# Daily usage
-./tools/scripts/start-full.sh    # Start all services
-./tools/scripts/health.sh        # Check status
-./tools/scripts/logs.sh api      # View API logs
-./tools/scripts/stop.sh          # Stop all services
-```
-
-**For Backend Developers:**
-```bash
-./tools/scripts/start-infra.sh   # Start only MySQL + RabbitMQ
-# Then run your apps in IDE
-./tools/scripts/stop.sh          # Stop when done
-```
-
-See [tools/scripts/README.md](../apps/backend/tools/scripts/README.md) for detailed script documentation.
-
-#### Manual Docker Compose
+모든 서비스를 Docker로 실행:
 
 ```bash
-# Infrastructure only (backend development)
 cd infra/docker
-docker-compose up -d
 
-# Full stack (frontend development)
-cd infra/docker
-cp .env.example .env  # Edit AWS credentials
+# 환경변수 설정
+cp .env.example .env
+# .env 파일에서 AWS 자격증명 설정
+
+# 전체 스택 시작
 docker-compose -f docker-compose.full.yml up -d
-
-# View logs
-docker-compose logs -f lifepuzzle-api
-docker-compose logs -f image-resizer
-
-# Stop services
-docker-compose down
-docker-compose -f docker-compose.full.yml down
-
-# Rebuild and restart
-docker-compose -f docker-compose.full.yml up -d --build
 ```
 
-## Kubernetes
+**Services:**
+- **MySQL**: `localhost:3306`
+- **RabbitMQ**: `localhost:5672`, UI: `http://localhost:15672`
+- **LifePuzzle API**: `http://localhost:8080`
+- **Image Resizer**: `http://localhost:9000`
 
-Using **Helm charts** for better management, templating, and versioning.
+## Scripts
 
-### Helm Charts
-
-See [helm/README.md](./helm/README.md) for comprehensive Helm chart documentation.
-
-#### Development Environment
+### 프론트엔드 개발자
 ```bash
-# Add Bitnami repository
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-
-# Install for development
-helm install lifepuzzle-infra ./helm/lifepuzzle-infrastructure \
-  --namespace lifepuzzle \
-  --create-namespace \
-  --values ./helm/lifepuzzle-infrastructure/values-dev.yaml
+./tools/scripts/setup-dev.sh     # 최초 설정
+./tools/scripts/start-full.sh    # 전체 서비스 시작
+./tools/scripts/health.sh        # 상태 확인
+./tools/scripts/logs.sh api      # 로그 확인
+./tools/scripts/stop.sh          # 종료
 ```
 
-#### Production Environment
-
-**Using Environment Variables (Recommended):**
+### 백엔드 개발자
 ```bash
-# Set environment variables for sensitive data
-export MYSQL_ROOT_PASSWORD="your-secure-root-password"
-export MYSQL_PASSWORD="your-secure-lifepuzzle-password"
-export RABBITMQ_PASSWORD="your-secure-rabbitmq-password"
-export RABBITMQ_ERLANG_COOKIE="your-secure-erlang-cookie"
-
-# Deploy using the script
-cd infra/helm
-./deploy-prod.sh
+./tools/scripts/start-infra.sh   # MySQL + RabbitMQ만 시작
+# IDE에서 앱 실행
+./tools/scripts/stop.sh          # 종료
 ```
 
-**Manual Deployment:**
-```bash
-helm install lifepuzzle-infra ./helm/lifepuzzle-infrastructure \
-  --namespace lifepuzzle \
-  --create-namespace \
-  --values ./helm/lifepuzzle-infrastructure/values-prod.yaml \
-  --set mysql.auth.rootPassword="$MYSQL_ROOT_PASSWORD" \
-  --set mysql.auth.password="$MYSQL_PASSWORD" \
-  --set rabbitmq.auth.password="$RABBITMQ_PASSWORD" \
-  --set rabbitmq.auth.erlangCookie="$RABBITMQ_ERLANG_COOKIE"
-```
+## Default Credentials
 
-### Access Services
-
-#### MySQL
-```bash
-# Internal access (from within cluster)
-mysql-service.lifepuzzle.svc.cluster.local:3306
-
-# External access (development only)
-kubectl port-forward svc/mysql-nodeport 3306:3306 -n lifepuzzle
-```
-
-#### RabbitMQ
-```bash
-# Internal access (from within cluster)
-rabbitmq-service.lifepuzzle.svc.cluster.local:5672
-
-# Management UI (development only)
-kubectl port-forward svc/rabbitmq-nodeport 15672:15672 -n lifepuzzle
-# Then visit: http://localhost:15672
-```
-
-### Configuration
-
-#### MySQL
-- Configured with UTF-8MB4 charset
-- Korean timezone (+09:00)
-- Performance optimizations for containerized environment
-- Automatic database initialization
-
-#### RabbitMQ
-- Pre-configured with image processing queues
-- Management plugin enabled
-- Kubernetes peer discovery for clustering
-- Persistent storage for durability
-
-### Scaling
-
-#### MySQL
-- Currently configured as single instance
-- For high availability, consider MySQL InnoDB Cluster or external managed database
-
-#### RabbitMQ
-- Configured as StatefulSet for easy scaling
-- To scale: `kubectl scale statefulset rabbitmq --replicas=3 -n lifepuzzle`
-- Automatic clustering with Kubernetes peer discovery
-
-### Security Notes
-
-- Default passwords are used for development
-- For production, update secrets with strong passwords
-- Consider using external secret management (e.g., Vault, AWS Secrets Manager)
-- Network policies should be implemented to restrict access
-
-### Monitoring
-
-- Health checks configured for both services
-- Resource limits set to prevent resource exhaustion
-- Logs available via `kubectl logs`
-
-### Backup
-
-- MySQL data is persisted in PVC
-- RabbitMQ data and configuration are persisted
-- Implement regular backup strategies for production
+| Service | User | Password | Note |
+|---------|------|----------|------|
+| MySQL (root) | root | rootpassword | 관리용 |
+| MySQL | lifepuzzle | lifepuzzlepass | 앱 사용 |
+| RabbitMQ | lifepuzzle | lifepuzzlepass | vhost: lifepuzzle |
 
 ## Environment Variables
 
-The following environment variables should be set in your application:
+앱에서 사용하는 환경변수:
 
 ```bash
 # Database
-DB_HOST=mysql-service.lifepuzzle.svc.cluster.local  # or localhost for Docker
+DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=lifepuzzle
 DB_USER=lifepuzzle
 DB_PASSWORD=lifepuzzlepass
 
 # RabbitMQ
-RABBITMQ_HOST=rabbitmq-service.lifepuzzle.svc.cluster.local  # or localhost for Docker
+RABBITMQ_HOST=localhost
 RABBITMQ_PORT=5672
 RABBITMQ_USERNAME=lifepuzzle
 RABBITMQ_PASSWORD=lifepuzzlepass
 RABBITMQ_VHOST=lifepuzzle
 ```
+
+## Production Deployment
+
+운영 환경 배포는 [homelab](https://github.com/itmca/homelab) 레포에서 관리합니다:
+
+- Nginx 리버스 프록시
+- K8s Helm 배포 설정
+- DB 백업 스크립트
+- SSL 인증서 관리
