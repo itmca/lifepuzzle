@@ -5,7 +5,7 @@ import io.itmca.lifepuzzle.domain.content.endpoint.request.PresignedUrlRequest;
 import io.itmca.lifepuzzle.domain.content.endpoint.response.GalleryUploadCompleteResponse;
 import io.itmca.lifepuzzle.domain.content.endpoint.response.PresignedUrlResponse;
 import io.itmca.lifepuzzle.domain.content.service.GalleryWriteService;
-import io.itmca.lifepuzzle.domain.content.service.PresignedUrlService;
+import io.itmca.lifepuzzle.domain.content.service.GalleryWriteService.FileInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -18,13 +18,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Gallery Upload")
 public class GalleryUploadEndpoint {
-  private final PresignedUrlService presignedUrlService;
   private final GalleryWriteService galleryWriteService;
 
   @PostMapping("/v1/galleries/presigned-urls")
   @Operation(summary = "Presigned URL 생성", description = "S3 파일 업로드를 위한 presigned URL을 생성합니다")
-  public PresignedUrlResponse generatePresignedUrl(@Valid @RequestBody PresignedUrlRequest presignedUrlRequest) {
-    return presignedUrlService.createPresignedUrls(presignedUrlRequest);
+  public PresignedUrlResponse generatePresignedUrl(@Valid @RequestBody PresignedUrlRequest request) {
+    var files = request.files().stream()
+        .map(f -> new FileInfo(f.fileName(), f.contentType()))
+        .toList();
+    var result = galleryWriteService.createPresignedUrls(request.heroId(), request.ageGroup(), files);
+    return PresignedUrlResponse.from(result);
   }
 
   @PostMapping("/v1/galleries/upload-complete")

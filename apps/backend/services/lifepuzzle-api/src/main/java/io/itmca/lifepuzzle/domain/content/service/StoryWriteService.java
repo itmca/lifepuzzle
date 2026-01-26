@@ -1,5 +1,6 @@
 package io.itmca.lifepuzzle.domain.content.service;
 
+import static io.itmca.lifepuzzle.domain.content.type.LikeType.STORY;
 import static io.itmca.lifepuzzle.global.constants.FileConstant.STORY_BASE_PATH;
 import static java.io.File.separator;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -7,12 +8,16 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import io.itmca.lifepuzzle.domain.content.endpoint.request.StoryContentUploadRequest;
 import io.itmca.lifepuzzle.domain.content.endpoint.request.StoryGalleryWriteRequest;
 import io.itmca.lifepuzzle.domain.content.endpoint.request.StoryVoiceUploadRequest;
+import io.itmca.lifepuzzle.domain.content.entity.Like;
 import io.itmca.lifepuzzle.domain.content.entity.Story;
 import io.itmca.lifepuzzle.domain.content.entity.StoryGallery;
 import io.itmca.lifepuzzle.domain.content.repository.GalleryRepository;
+import io.itmca.lifepuzzle.domain.content.repository.LikeRepository;
 import io.itmca.lifepuzzle.domain.content.repository.StoryGalleryRepository;
 import io.itmca.lifepuzzle.domain.content.repository.StoryRepository;
+import io.itmca.lifepuzzle.global.exception.AlreadyLikedException;
 import io.itmca.lifepuzzle.global.exception.GalleryNotFoundException;
+import io.itmca.lifepuzzle.global.exception.LikeNotFoundException;
 import io.itmca.lifepuzzle.global.exception.StoryNotFoundException;
 import io.itmca.lifepuzzle.global.file.CustomFile;
 import io.itmca.lifepuzzle.global.file.domain.StoryFile;
@@ -32,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class StoryWriteService {
   private final StoryRepository storyRepository;
   private final GalleryRepository galleryRepository;
+  private final LikeRepository likeRepository;
   private final S3UploadService s3UploadService;
   private final StoryGalleryRepository storyGalleryRepository;
 
@@ -186,5 +192,44 @@ public class StoryWriteService {
   private String generateStoryKey(Long heroId) {
     var now = LocalDateTime.now();
     return heroId.toString() + "-" + now.getHour() + now.getMinute() + now.getSecond();
+  }
+
+  // Like 관련 메서드
+  @Transactional
+  public boolean addLike(String storyKey, Long userId) {
+    storyRepository.findById(storyKey)
+        .orElseThrow(() -> StoryNotFoundException.byStoryId(storyKey));
+
+    likeRepository.findLike(userId, storyKey, STORY)
+        .ifPresentOrElse(
+            like -> {
+              throw AlreadyLikedException.forStory(storyKey);
+            },
+            () -> likeRepository.save(
+                Like.builder()
+                    .userId(userId)
+                    .type(STORY)
+                    .contentId(storyKey)
+                    .build()
+            )
+        );
+
+    return true;
+  }
+
+  @Transactional
+  public boolean deleteLike(String storyKey, Long userId) {
+    storyRepository.findById(storyKey)
+        .orElseThrow(() -> StoryNotFoundException.byStoryId(storyKey));
+
+    likeRepository.findLike(userId, storyKey, STORY)
+        .ifPresentOrElse(
+            likeRepository::delete,
+            () -> {
+              throw new LikeNotFoundException(storyKey);
+            }
+        );
+
+    return false;
   }
 }
