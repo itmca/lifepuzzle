@@ -4,14 +4,13 @@
 
 ## 프로젝트 구조
 
-```
 lifepuzzle/
 ├── apps/
 │   ├── rn/           # React Native 앱
 │   └── backend/      # Spring Boot + Go 백엔드
-├── packages/         # 공유 패키지 (향후)
+├── packages/         # 공유 패키지 (Future Use)
+├── infra/            # 공통 인프라 (Docker, Helm)
 └── .team/            # 팀 공통 설정 (submodule)
-```
 
 ## 시작하기
 
