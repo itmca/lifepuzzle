@@ -1,15 +1,2 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".team/hooks/update.sh"
-          }
-        ]
-      }
-    ]
-  }
 }
