@@ -1,2 +1,5 @@
 {
+  "enabledPlugins": {
+    "session-wrap@team-attention-plugins": true
+  }
 }
