@@ -58,6 +58,7 @@ fix/LP-456-bug-name
 /code-review    # 코드 리뷰
 /test-gen       # 테스트 코드 생성
 /commit         # 커밋 메시지 생성
+/commit-on-main # main에 직접 커밋
 /debug          # 에러 분석 및 해결
 ```
 
