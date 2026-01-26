@@ -55,7 +55,32 @@ tools/scripts/               # 개발 편의 스크립트
 
 ## 개발 패턴
 
-### Service 레이어 규칙 (CQRS)
+### Service 네이밍 규칙
+
+도메인 특성에 따라 다른 네이밍 패턴 적용:
+
+| 도메인 | 패턴 | 예시 |
+|--------|------|------|
+| **content, hero, user** | CQRS | `GalleryQueryService`, `GalleryWriteService` |
+| **auth** | UseCase 중심 | `LoginService`, `RefreshService`, `TokenIssueService` |
+| **ai** | CQRS 권장 | `AiVideoQueryService`, `AiVideoWriteService` |
+
+#### CQRS 패턴 (content, hero, user, ai)
+```
+EntityQueryService  - 조회 전용
+EntityWriteService  - 생성/수정/삭제
+```
+
+#### UseCase 패턴 (auth)
+```
+LoginService        - 로그인 플로우
+RegisterService     - 회원가입 플로우
+RefreshService      - 토큰 갱신
+TokenIssueService   - 토큰 발급
+ValidateService     - 외부 토큰 검증 (Apple, Kakao)
+```
+
+### Service 반환 규칙
 
 | 타입 | 반환 | 설명 |
 |------|------|------|
