@@ -14,26 +14,32 @@ import {
 } from '../../../components/ui/base/TextBase';
 import { formatDateToTodayOrYYMMDD } from '../../../utils/date-formatter.util.ts';
 import { AdaptiveImage } from '../../../components/ui/base/ImageBase';
-import { useAiGalleries } from '../../../services/gallery/gallery.query';
-import { AiGallery } from '../../../types/external/ai-photo.type';
+import { useAiGeneratedVideos } from '../../../services/gallery/gallery.query';
+import {
+  AiGeneratedVideo,
+  VideoGenerationStatus,
+} from '../../../types/external/ai-photo.type';
 
 interface WorkItem {
   id: number;
-  status: 'IN_PROGRESS' | 'COMPLETED';
-  createdBy?: string;
-  requestedAt: string;
-  completedAt: string;
-  thumbnailUrl?: string;
+  galleryId: number;
+  drivingVideoId: number;
+  status: VideoGenerationStatus;
+  startedAt?: string;
+  completedAt?: string;
   videoUrl?: string;
+  createdAt: string;
 }
 
 const AiPhotoWorkHistoryPage = (): React.ReactElement => {
   // React hooks
-  const [inProgressItems, setInProgressItems] = useState<AiGallery[]>([]);
-  const [completedItems, setCompletedItems] = useState<AiGallery[]>([]);
+  const [inProgressItems, setInProgressItems] = useState<AiGeneratedVideo[]>(
+    [],
+  );
+  const [completedItems, setCompletedItems] = useState<AiGeneratedVideo[]>([]);
 
   // Custom hooks
-  const { gallery } = useAiGalleries();
+  const { generatedVideos } = useAiGeneratedVideos();
 
   // Derived value or local variables
   const screenWidth = Dimensions.get('window').width;
@@ -41,6 +47,8 @@ const AiPhotoWorkHistoryPage = (): React.ReactElement => {
   // Custom functions
   const renderWorkItem = (item: WorkItem) => {
     const itemWidth = (screenWidth - 48) / 2; // 좌우 패딩 20px씩, 아이템 간격 20px
+    const isInProgress =
+      item.status === 'PENDING' || item.status === 'IN_PROGRESS';
 
     return (
       <TouchableOpacity
@@ -57,37 +65,46 @@ const AiPhotoWorkHistoryPage = (): React.ReactElement => {
             borderRadius={6}
             height={itemWidth * 0.85}
           >
-            {item.thumbnailUrl ? (
-              <AdaptiveImage uri={item.thumbnailUrl} style={{ flex: 1 }} />
+            {item.videoUrl ? (
+              <AdaptiveImage uri={item.videoUrl} style={{ flex: 1 }} />
             ) : (
               <View style={{ flex: 1, backgroundColor: Color.GREY_600 }} />
             )}
           </ContentContainer>
-          {item.status !== 'COMPLETED' ? (
+          {isInProgress ? (
             <ContentContainer
               useHorizontalLayout
               gap={6}
               justifyContent={'flex-start'}
             >
               <BodyTextM color={Color.GREY_700}>
-                {formatDateToTodayOrYYMMDD(item.requestedAt)}{' '}
+                {formatDateToTodayOrYYMMDD(item.startedAt ?? item.createdAt)}{' '}
               </BodyTextM>
               <BodyTextB color={Color.AI_500}>생성중...</BodyTextB>
             </ContentContainer>
+          ) : item.status === 'FAILED' ? (
+            <ContentContainer
+              useHorizontalLayout
+              gap={6}
+              justifyContent={'flex-start'}
+            >
+              <BodyTextM color={Color.GREY_700}>
+                {formatDateToTodayOrYYMMDD(item.createdAt)}{' '}
+              </BodyTextM>
+              <BodyTextB color={Color.ERROR_300}>생성 실패</BodyTextB>
+            </ContentContainer>
           ) : (
-            <>
-              <BodyTextB color={Color.GREY_700}>
-                by {item.createdBy ?? ''}
-              </BodyTextB>
-              <ContentContainer gap={0}>
-                <CaptionB color={Color.GREY_300}>
-                  {formatDateToTodayOrYYMMDD(item.requestedAt)} 요청
-                </CaptionB>
+            <ContentContainer gap={0}>
+              <CaptionB color={Color.GREY_300}>
+                {formatDateToTodayOrYYMMDD(item.startedAt ?? item.createdAt)}{' '}
+                요청
+              </CaptionB>
+              {item.completedAt && (
                 <CaptionB color={Color.GREY_300}>
                   {formatDateToTodayOrYYMMDD(item.completedAt)} 완료
                 </CaptionB>
-              </ContentContainer>
-            </>
+              )}
+            </ContentContainer>
           )}
         </ContentContainer>
       </TouchableOpacity>
@@ -96,11 +113,19 @@ const AiPhotoWorkHistoryPage = (): React.ReactElement => {
 
   // Side effects
   useEffect(() => {
-    if (gallery && gallery.length > 0) {
-      setInProgressItems(gallery.filter(item => item.status === 'IN_PROGRESS'));
-      setCompletedItems(gallery.filter(item => item.status === 'COMPLETED'));
+    if (generatedVideos && generatedVideos.length > 0) {
+      setInProgressItems(
+        generatedVideos.filter(
+          item => item.status === 'PENDING' || item.status === 'IN_PROGRESS',
+        ),
+      );
+      setCompletedItems(
+        generatedVideos.filter(
+          item => item.status === 'COMPLETED' || item.status === 'FAILED',
+        ),
+      );
     }
-  }, [gallery]);
+  }, [generatedVideos]);
 
   return (
     <PageContainer edges={['left', 'right', 'bottom']}>

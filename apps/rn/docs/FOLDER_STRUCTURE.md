@@ -266,13 +266,13 @@ app/services/
 │   ├── permission.hook.ts
 │   └── screen.hook.ts
 ├── gallery/           # 갤러리 관련
-│   ├── gallery.query.ts       # Query hooks (useGalleries, useAiPhotoTemplates, useAiGalleries)
+│   ├── gallery.query.ts       # Query hooks (useGalleries, useAiPhotoTemplates, useAiGeneratedVideos)
 │   ├── gallery.mutation.ts    # Mutation hooks (useUploadGallery, useCreateAiPhoto)
 │   ├── facebook.photos.hook.ts
 │   ├── gallery.api.service.ts
 │   └── gallery-upload-*.ts
 ├── hero/              # 히어로 관련
-│   ├── hero.query.ts          # Query hooks (useHero, useHeroes, useSharedHero)
+│   ├── hero.query.ts          # Query hooks (useHero, useHeroes)
 │   ├── hero.mutation.ts       # Mutation hooks (useCreateHero, useUpdateHero, useDeleteHero, useRegisterSharedHero)
 │   └── hero-payload.service.ts
 ├── image/             # 이미지 처리
@@ -294,8 +294,8 @@ app/services/
 **TanStack Query 파일** (TanStack Query 전환 이후)
 
 - **Query 파일** (`*.query.ts`): 모든 query hooks 통합
-  - 예: `hero.query.ts` (useHero, useHeroes, useSharedHero)
-  - 예: `gallery.query.ts` (useGalleries, useAiPhotoTemplates, useAiGalleries)
+  - 예: `hero.query.ts` (useHero, useHeroes)
+  - 예: `gallery.query.ts` (useGalleries, useAiPhotoTemplates, useAiGeneratedVideos)
 - **Mutation 파일** (`*.mutation.ts`): 모든 mutation hooks 통합
   - 예: `hero.mutation.ts` (useCreateHero, useUpdateHero, useDeleteHero)
   - 예: `gallery.mutation.ts` (useUploadGallery, useCreateAiPhoto)

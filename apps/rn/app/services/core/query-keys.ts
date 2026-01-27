@@ -25,11 +25,7 @@ export const queryKeys = {
   ai: {
     all: ['ai'] as const,
     templates: () => [...queryKeys.ai.all, 'templates'] as const,
-    galleries: (heroId?: number) =>
-      [...queryKeys.ai.all, 'galleries', heroId] as const,
-  },
-  share: {
-    all: ['share'] as const,
-    hero: (code: string) => [...queryKeys.share.all, 'hero', code] as const,
+    generatedVideos: (heroId?: number) =>
+      [...queryKeys.ai.all, 'generatedVideos', heroId] as const,
   },
 } as const;

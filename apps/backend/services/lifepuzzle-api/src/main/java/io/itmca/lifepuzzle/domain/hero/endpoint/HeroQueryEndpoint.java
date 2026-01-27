@@ -1,8 +1,8 @@
 package io.itmca.lifepuzzle.domain.hero.endpoint;
 
 import io.itmca.lifepuzzle.domain.auth.jwt.AuthPayload;
-import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroLegacyListQueryResponse;
-import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroLegacyQueryResponse;
+import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroDetailListQueryResponse;
+import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroDetailQueryResponse;
 import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroListQueryResponse;
 import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroQueryResponse;
 import io.itmca.lifepuzzle.domain.hero.service.HeroQueryService;
@@ -26,17 +26,17 @@ public class HeroQueryEndpoint {
   private final HeroValidationService heroValidationService;
   private final UserQueryService userQueryService;
 
-  @Operation(summary = "주인공 전체 목록 조회")
+  @Operation(summary = "주인공 전체 목록 조회 (상세 정보 포함)")
   @GetMapping({"/v1/heroes"})
-  public HeroLegacyListQueryResponse getHeroesV2(@AuthenticationPrincipal AuthPayload authPayload) {
+  public HeroDetailListQueryResponse getHeroes(@AuthenticationPrincipal AuthPayload authPayload) {
     var user = userQueryService.findByUserNo(authPayload.getUserId());
 
-    return heroQueryService.toLegacyQueryResponses(user);
+    return heroQueryService.toDetailQueryResponses(user);
   }
 
-  @Operation(summary = "주인공 조회")
+  @Operation(summary = "주인공 조회 (상세 정보 포함)")
   @GetMapping({"/v1/heroes/{heroNo}"})
-  public HeroLegacyQueryResponse getHeroDetail(
+  public HeroDetailQueryResponse getHeroDetail(
       @PathVariable("heroNo") @Schema(description = "주인공키") Long heroNo,
       @AuthenticationPrincipal AuthPayload authPayload) {
     val userNo = authPayload.getUserId();
@@ -44,12 +44,12 @@ public class HeroQueryEndpoint {
 
     var hero = heroQueryService.findHeroByHeroNo(heroNo);
 
-    return heroQueryService.toLegacyQueryResponse(hero, userNo);
+    return heroQueryService.toDetailQueryResponse(hero, userNo);
   }
 
-  @Operation(summary = "주인공 조회 v2")
+  @Operation(summary = "주인공 조회 (간단 정보)")
   @GetMapping({"/v2/heroes/{heroNo}"})
-  public HeroQueryResponse getHeroDetailV2(
+  public HeroQueryResponse getHeroSimple(
       @PathVariable("heroNo") @Schema(description = "주인공키") Long heroNo,
       @AuthenticationPrincipal AuthPayload authPayload) {
     val userNo = authPayload.getUserId();
@@ -60,9 +60,9 @@ public class HeroQueryEndpoint {
     return heroQueryService.toQueryResponse(hero, userNo);
   }
 
-  @Operation(summary = "주인공 전체 목록 조회 v2")
+  @Operation(summary = "주인공 전체 목록 조회 (간단 정보)")
   @GetMapping({"/v2/heroes"})
-  public HeroListQueryResponse getHeroesV2List(
+  public HeroListQueryResponse getHeroesSimple(
       @AuthenticationPrincipal AuthPayload authPayload) {
     var user = userQueryService.findByUserNo(authPayload.getUserId());
 

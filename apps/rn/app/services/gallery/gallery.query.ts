@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { AgeGroupsType, TagKey, TagType } from '../../types/core/media.type';
-import { AiGallery, AiPhotoTemplate } from '../../types/external/ai-photo.type';
+import {
+  AiGeneratedVideo,
+  AiPhotoTemplate,
+} from '../../types/external/ai-photo.type';
 import { useHeroStore } from '../../stores/hero.store';
 import { useMediaStore } from '../../stores/media.store';
 import { useSelectionStore } from '../../stores/selection.store';
@@ -140,30 +143,33 @@ export const useAiPhotoTemplates = (): UseAiPhotoTemplatesReturn => {
   };
 };
 
-interface AiGalleriesQueryResponse {
-  gallery: AiGallery[];
+interface AiGeneratedVideosQueryResponse {
+  generatedVideos: AiGeneratedVideo[];
 }
 
-export type UseAiGalleriesReturn = {
-  gallery: AiGallery[];
+export type UseAiGeneratedVideosReturn = {
+  generatedVideos: AiGeneratedVideo[];
   isLoading: boolean;
   refetch: () => void;
 };
 
-export const useAiGalleries = (): UseAiGalleriesReturn => {
+export const useAiGeneratedVideos = (): UseAiGeneratedVideosReturn => {
   const hero = useHeroStore(state => state.currentHero);
 
-  const query = useAuthQuery<AiGalleriesQueryResponse>({
-    queryKey: queryKeys.ai.galleries(hero?.id),
+  const query = useAuthQuery<AiGeneratedVideosQueryResponse>({
+    queryKey: queryKeys.ai.generatedVideos(hero?.id),
     axiosConfig: {
       method: 'GET',
-      url: `/v1/galleries/ai?heroId=${hero?.id || 0}`,
+      url: `/v1/ai/videos`,
+      params: {
+        heroNo: hero?.id,
+      },
     },
     enabled: Boolean(hero?.id),
   });
 
   return {
-    gallery: query.data?.gallery ?? [],
+    generatedVideos: query.data?.generatedVideos ?? [],
     isLoading: query.isFetching,
     refetch: query.refetch,
   };

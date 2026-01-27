@@ -3,8 +3,8 @@ package io.itmca.lifepuzzle.domain.hero.service;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.itmca.lifepuzzle.domain.content.service.StoryQueryService;
-import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroLegacyListQueryResponse;
-import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroLegacyQueryResponse;
+import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroDetailListQueryResponse;
+import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroDetailQueryResponse;
 import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroListQueryResponse;
 import io.itmca.lifepuzzle.domain.hero.endpoint.response.HeroQueryResponse;
 import io.itmca.lifepuzzle.domain.hero.entity.Hero;
@@ -34,13 +34,13 @@ public class HeroQueryService {
         .orElseThrow(() -> HeroNotFoundException.byHeroNo(heroNo));
   }
 
-  public HeroLegacyQueryResponse toLegacyQueryResponse(Hero hero, Long userNo) {
+  public HeroDetailQueryResponse toDetailQueryResponse(Hero hero, Long userNo) {
     int puzzleCnt = storyQueryService.countByHeroNo(hero.getHeroNo());
 
-    return HeroLegacyQueryResponse.from(hero, userNo, puzzleCnt);
+    return HeroDetailQueryResponse.from(hero, userNo, puzzleCnt);
   }
 
-  public HeroLegacyListQueryResponse toLegacyQueryResponses(User user) {
+  public HeroDetailListQueryResponse toDetailQueryResponses(User user) {
     var heroUserAuths = user.getHeroUserAuths();
     if (isEmpty(heroUserAuths)) {
       throw HeroNotFoundException.byUserNo(user.getId());
@@ -49,10 +49,10 @@ public class HeroQueryService {
     var heroQueryResponses = heroUserAuths.stream()
         .map(HeroUserAuth::getHero)
         .filter(Hero::isActive)
-        .map(hero -> toLegacyQueryResponse(hero, user.getId()))
+        .map(hero -> toDetailQueryResponse(hero, user.getId()))
         .toList();
 
-    return new HeroLegacyListQueryResponse(heroQueryResponses);
+    return new HeroDetailListQueryResponse(heroQueryResponses);
   }
 
   public HeroQueryResponse toQueryResponse(Hero hero, Long userNo) {

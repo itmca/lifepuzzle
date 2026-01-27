@@ -8,12 +8,20 @@ export type AiPhotoTemplate = {
 
 export type AiType = 'AI_PHOTO';
 
-export type AiGallery = {
+export type VideoGenerationStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'FAILED';
+
+// Backend: AiGeneratedVideoDto
+export type AiGeneratedVideo = {
   id: number;
-  status: 'IN_PROGRESS' | 'COMPLETED';
-  createdBy?: string;
-  requestedAt: string;
-  completedAt: string;
-  thumbnailUrl?: string;
+  galleryId: number;
+  drivingVideoId: number;
   videoUrl?: string;
+  status: VideoGenerationStatus;
+  startedAt?: string;
+  completedAt?: string;
+  createdAt: string;
 };

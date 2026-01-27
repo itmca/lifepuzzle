@@ -481,7 +481,7 @@ export const useCreateAiPhoto = (
       });
       // 캐시 무효화
       queryClient.invalidateQueries({
-        queryKey: queryKeys.ai.galleries(request.heroId),
+        queryKey: queryKeys.ai.generatedVideos(request.heroId),
       });
     },
     onError: err => {

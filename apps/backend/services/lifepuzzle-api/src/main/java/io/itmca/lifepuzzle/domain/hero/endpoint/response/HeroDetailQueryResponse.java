@@ -6,19 +6,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import lombok.Builder;
-import lombok.Getter;
 
-@Getter
-@Builder
-@Deprecated
-public class HeroLegacyQueryResponse {
-  private HeroQueryResponse hero;
-  private List<HeroUserAuthQueryDto> users;
-  @Schema(description = "맞춘 퍼즐 개수")
-  private int puzzleCnt;
+@Schema(title = "주인공 상세 조회 응답")
+public record HeroDetailQueryResponse(
+    @Schema(description = "주인공 정보") HeroQueryResponse hero,
+    @Schema(description = "연결된 사용자 목록") List<HeroUserAuthQueryDto> users,
+    @Schema(description = "맞춘 퍼즐 개수") int puzzleCnt
+) {
 
-  public static HeroLegacyQueryResponse from(Hero hero, Long userNo, int puzzleCnt) {
+  public static HeroDetailQueryResponse from(Hero hero, Long userNo, int puzzleCnt) {
     var mainUserHeroAuthQueryDTO = hero.getHeroUserAuths().stream()
         .filter(heroUserAuth -> heroUserAuth.getUser().getId().equals(userNo))
         .map(HeroUserAuthQueryDto::from)
@@ -33,10 +29,10 @@ public class HeroLegacyQueryResponse {
     heroAuthQueryDTOs.addAll(mainUserHeroAuthQueryDTO);
     heroAuthQueryDTOs.addAll(otherUserHeroAuthQueryDTOs);
 
-    return HeroLegacyQueryResponse.builder()
-        .hero(HeroQueryResponse.from(hero, userNo))
-        .users(heroAuthQueryDTOs)
-        .puzzleCnt(puzzleCnt)
-        .build();
+    return new HeroDetailQueryResponse(
+        HeroQueryResponse.from(hero, userNo),
+        heroAuthQueryDTOs,
+        puzzleCnt
+    );
   }
 }
