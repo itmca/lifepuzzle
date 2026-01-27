@@ -3,6 +3,7 @@ package io.itmca.aivideogenerator.domain.video.service;
 import io.itmca.aivideogenerator.domain.video.entity.AiGeneratedVideo;
 import io.itmca.aivideogenerator.domain.video.event.AiVideoCreateEvent;
 import io.itmca.aivideogenerator.domain.video.repository.AiGeneratedVideoRepository;
+import io.itmca.aivideogenerator.domain.video.type.VideoGenerationStatus;
 import io.itmca.aivideogenerator.global.service.PythonExecutorService;
 import java.util.List;
 import java.util.Optional;
@@ -24,26 +25,24 @@ public class VideoGenerationService {
     log.info("Processing video generation for heroId: {}, galleryId: {}, drivingVideoId: {}",
         event.getHeroId(), event.getGalleryId(), event.getDrivingVideoId());
 
-    Optional<AiGeneratedVideo> existingVideo = aiGeneratedVideoRepository
-        .findByHeroNoAndGalleryIdAndDrivingVideoId(
+    // PENDING 상태의 레코드를 찾음 (lifepuzzle-api에서 생성한 레코드)
+    Optional<AiGeneratedVideo> pendingVideo = aiGeneratedVideoRepository
+        .findByHeroNoAndGalleryIdAndDrivingVideoIdAndStatus(
             event.getHeroId(),
             event.getGalleryId(),
-            event.getDrivingVideoId()
+            event.getDrivingVideoId(),
+            VideoGenerationStatus.PENDING
         );
 
-    AiGeneratedVideo video;
-    if (existingVideo.isPresent()) {
-      video = existingVideo.get();
-      log.info("Found existing video record with id: {}", video.getId());
-    } else {
-      video = AiGeneratedVideo.builder()
-          .heroNo(event.getHeroId())
-          .galleryId(event.getGalleryId())
-          .drivingVideoId(event.getDrivingVideoId())
-          .build();
-      video = aiGeneratedVideoRepository.save(video);
-      log.info("Created new video record with id: {}", video.getId());
+    if (pendingVideo.isEmpty()) {
+      log.warn("No PENDING video record found for heroId: {}, galleryId: {}, drivingVideoId: {}. "
+              + "This may indicate the record was already processed or the event is stale.",
+          event.getHeroId(), event.getGalleryId(), event.getDrivingVideoId());
+      return;
     }
+
+    AiGeneratedVideo video = pendingVideo.get();
+    log.info("Found PENDING video record with id: {}", video.getId());
 
     try {
       video.markAsStarted();

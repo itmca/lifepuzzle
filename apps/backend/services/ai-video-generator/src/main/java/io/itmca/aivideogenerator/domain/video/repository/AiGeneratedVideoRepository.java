@@ -16,4 +16,7 @@ public interface AiGeneratedVideoRepository extends JpaRepository<AiGeneratedVid
 
   Optional<AiGeneratedVideo> findByHeroNoAndGalleryIdAndDrivingVideoId(
       Long heroNo, Long galleryId, Long drivingVideoId);
+
+  Optional<AiGeneratedVideo> findByHeroNoAndGalleryIdAndDrivingVideoIdAndStatus(
+      Long heroNo, Long galleryId, Long drivingVideoId, VideoGenerationStatus status);
 }

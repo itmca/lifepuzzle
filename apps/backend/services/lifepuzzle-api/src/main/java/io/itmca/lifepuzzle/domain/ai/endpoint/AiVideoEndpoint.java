@@ -45,9 +45,11 @@ public class AiVideoEndpoint {
     return ResponseEntity.ok(response);
   }
 
-  @Operation(summary = "AI 포토 생성", description = "업로드된 사진을 기반으로 AI 비디오를 생성합니다")
+  @Operation(summary = "AI 포토 생성", description = "업로드된 사진을 기반으로 AI 비디오를 생성합니다. 이미 진행 중인 요청이 있으면 기존 요청을 반환합니다.")
   @PostMapping("/v1/ai/videos")
-  public void generateAiVideo(@RequestBody AiPhotoGenerateRequest request) {
-    aiVideoWriteService.generateAiVideo(request.heroId(), request.galleryId(), request.drivingVideoId());
+  public ResponseEntity<AiGeneratedVideoDto> generateAiVideo(@RequestBody AiPhotoGenerateRequest request) {
+    var video = aiVideoWriteService.generateAiVideo(
+        request.heroId(), request.galleryId(), request.drivingVideoId());
+    return ResponseEntity.ok(AiGeneratedVideoDto.from(video));
   }
 }
