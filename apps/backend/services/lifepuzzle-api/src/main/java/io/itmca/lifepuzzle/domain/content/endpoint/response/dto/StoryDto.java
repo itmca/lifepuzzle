@@ -12,8 +12,6 @@ public record StoryDto(
     String content,
     List<String> photos,
     List<String> videos,
-    @Deprecated
-    List<String> audios,
     String audioUrl,
     Integer audioDurationSeconds,
     List<LikeDto> likes,
@@ -28,9 +26,8 @@ public record StoryDto(
         story.getId(),
         story.getHeroId(),
         story.getContent(),
-        Collections.emptyList(), // TODO: Gallery 시스템으로 이관됨
-        Collections.emptyList(), // TODO: Gallery 시스템으로 이관됨
-        story.getAudios(),
+        Collections.emptyList(),
+        Collections.emptyList(),
         story.getAudioUrl(),
         story.getAudioDuration(),
         likeDTOs,

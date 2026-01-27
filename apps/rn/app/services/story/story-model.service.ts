@@ -43,7 +43,8 @@ export const StoryModelService = {
       content: content,
       question: baseStory?.question ?? '',
       photos: baseStory?.photos ?? [],
-      audios: baseStory?.audios ?? [],
+      audioUrl: baseStory?.audioUrl,
+      audioDurationSeconds: baseStory?.audioDurationSeconds,
       videos: baseStory?.videos ?? [],
       gallery: baseStory?.gallery ?? [],
       tags: baseStory?.tags ?? [],
@@ -88,9 +89,8 @@ export const StoryModelService = {
       content: writingStory.content ?? baseStory?.content ?? '',
       question: baseStory?.question ?? '',
       photos: baseStory?.photos ?? [],
-      audios: writingStory.voice
-        ? [writingStory.voice]
-        : (baseStory?.audios ?? []),
+      audioUrl: writingStory.voice || baseStory?.audioUrl,
+      audioDurationSeconds: baseStory?.audioDurationSeconds,
       videos: baseStory?.videos ?? [],
       gallery: baseStory?.gallery ?? [],
       tags: baseStory?.tags ?? [],

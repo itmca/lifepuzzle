@@ -4,7 +4,7 @@ export type StoryType = {
   content: string;
   question: string;
   photos: string[];
-  audios: string[];
+  audioUrl?: string;
   audioDurationSeconds?: number;
   videos: string[];
   gallery: string[];

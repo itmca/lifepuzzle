@@ -559,7 +559,7 @@ const StoryDetailPage = (): React.ReactElement => {
                 </>
               )}
               <ContentContainer paddingVertical={10}>
-                {currentGalleryItem?.story?.audios?.[0] ? (
+                {currentGalleryItem?.story?.audioUrl ? (
                   <VoicePlayButton
                     onPress={() => setActiveModal('voice')}
                     playDurationText={toMmSs(
@@ -595,7 +595,7 @@ const StoryDetailPage = (): React.ReactElement => {
         }}
         onSaveVoice={handleVoiceSave}
         onDeleteVoice={handleVoiceDelete}
-        voiceSource={currentGalleryItem?.story?.audios?.[0]}
+        voiceSource={currentGalleryItem?.story?.audioUrl}
         audioDurationSeconds={currentGalleryItem?.story?.audioDurationSeconds}
         isLoading={isVoiceLoading}
       />

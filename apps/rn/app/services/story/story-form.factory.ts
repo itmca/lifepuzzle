@@ -64,7 +64,7 @@ export const StoryFormFactory = {
       content: story?.content ?? '',
       date: story?.date ? new Date(story?.date) : new Date(),
       gallery,
-      voice: story?.audios && story.audios.length > 0 ? story.audios[0] : '',
+      voice: story?.audioUrl ?? '',
     };
   },
 
@@ -96,7 +96,7 @@ export const StoryFormFactory = {
       content: story.content,
       date: new Date(story.date),
       gallery,
-      voice: story.audios && story.audios.length > 0 ? story.audios[0] : '',
+      voice: story.audioUrl ?? '',
     };
   },
 } as const;

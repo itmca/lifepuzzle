@@ -9,10 +9,11 @@ import io.itmca.lifepuzzle.domain.content.endpoint.response.dto.TagDto;
 import io.itmca.lifepuzzle.domain.content.entity.Gallery;
 import io.itmca.lifepuzzle.domain.content.repository.GalleryRepository;
 import io.itmca.lifepuzzle.domain.content.type.AgeGroup;
-import io.itmca.lifepuzzle.domain.hero.endpoint.response.dto.HeroDto;
 import io.itmca.lifepuzzle.domain.hero.entity.Hero;
 import io.itmca.lifepuzzle.domain.hero.service.HeroQueryService;
 import io.itmca.lifepuzzle.global.exception.GalleryNotFoundException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -28,24 +29,27 @@ public class GalleryQueryService {
 
   public GalleryQueryResponse getHeroGallery(Long heroNo) {
     var hero = heroQueryService.findHeroByHeroNo(heroNo);
-    var heroDTO = HeroDto.from(hero);
-    var photos = getFilteredGallery(heroDTO);
+    var heroAge = calculateAge(hero.getBirthdate());
+    var photos = getFilteredGallery(hero.getHeroNo(), heroAge);
     var ageGroupsDTO = getGalleryByAgeGroup(photos, hero);
 
     return GalleryQueryResponse.builder()
-        .hero(heroDTO)
         .ageGroups(ageGroupsDTO)
-        .tags(getTags(heroDTO.getAge()))
+        .tags(getTags(heroAge))
         .totalGallery(photos.size())
         .build();
   }
 
-  private List<Gallery> getFilteredGallery(HeroDto heroDTO) {
-    var heroAgeGroup = AgeGroup.of(heroDTO.getAge());
+  private int calculateAge(LocalDate birthdate) {
+    return (int) ChronoUnit.YEARS.between(birthdate, LocalDate.now());
+  }
+
+  private List<Gallery> getFilteredGallery(Long heroNo, int heroAge) {
+    var heroAgeGroup = AgeGroup.of(heroAge);
     var allowedAgeGroups = getAgeGroupsUpTo(heroAgeGroup);
-    
-    return galleryRepository.findByHeroIdAndAgeGroupsWithStories(heroDTO.getId(), allowedAgeGroups)
-        .orElseThrow(() -> new GalleryNotFoundException(heroDTO.getId()));
+
+    return galleryRepository.findByHeroIdAndAgeGroupsWithStories(heroNo, allowedAgeGroups)
+        .orElseThrow(() -> new GalleryNotFoundException(heroNo));
   }
 
   private List<AgeGroup> getAgeGroupsUpTo(AgeGroup maxAgeGroup) {
