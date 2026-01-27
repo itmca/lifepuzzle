@@ -90,7 +90,7 @@ public class GalleryWriteService {
       var key = buildS3Key(heroId, gallery.getId(), photo.fileName());
 
       s3UploadService.upload(key, photo.bytes());
-      gallery.setUrl(key);
+      gallery.assignUrl(key);
       photoUploadEventPublisher.publishPhotoUploadEvent(gallery.getId(), heroId, key);
     }
 
@@ -119,8 +119,7 @@ public class GalleryWriteService {
     Gallery gallery = galleryRepository.findById(galleryId)
         .orElseThrow(() -> GalleryItemNotFoundException.of(galleryId));
 
-    gallery.setAgeGroup(ageGroup);
-    gallery.setDate(date);
+    gallery.updateMetadata(ageGroup, date);
 
     return galleryRepository.save(gallery);
   }
@@ -160,7 +159,7 @@ public class GalleryWriteService {
       Gallery gallery = galleryOpt.get();
 
       try {
-        gallery.setGalleryStatus(GalleryStatus.UPLOADED);
+        gallery.markAsUploaded();
         galleryRepository.save(gallery);
 
         results.add(new GalleryResult(
@@ -180,7 +179,7 @@ public class GalleryWriteService {
         }
 
       } catch (Exception e) {
-        gallery.setGalleryStatus(GalleryStatus.FAILED);
+        gallery.markAsFailed();
         galleryRepository.save(gallery);
 
         results.add(new GalleryResult(
@@ -222,7 +221,7 @@ public class GalleryWriteService {
       String key = buildS3Key(heroId, gallery.getId(), file.fileName());
       String presignedUrl = generatePresignedUrl(key, file.contentType());
 
-      gallery.setUrl(key);
+      gallery.assignUrl(key);
 
       String host = String.format("%s.s3.ap-northeast-2.amazonaws.com", bucket);
       var headers = new PresignedUrlItem.Headers(host, file.contentType(),

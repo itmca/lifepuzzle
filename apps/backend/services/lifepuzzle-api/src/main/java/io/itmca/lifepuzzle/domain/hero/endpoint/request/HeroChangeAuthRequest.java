@@ -1,6 +1,6 @@
 package io.itmca.lifepuzzle.domain.hero.endpoint.request;
 
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import io.itmca.lifepuzzle.global.aop.HeroNo;
 import io.swagger.v3.oas.annotations.media.Schema;
 

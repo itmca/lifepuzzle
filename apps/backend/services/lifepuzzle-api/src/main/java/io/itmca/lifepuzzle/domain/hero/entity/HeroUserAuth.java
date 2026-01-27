@@ -1,6 +1,6 @@
 package io.itmca.lifepuzzle.domain.hero.entity;
 
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import io.itmca.lifepuzzle.domain.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

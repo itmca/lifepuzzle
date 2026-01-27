@@ -19,7 +19,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -43,25 +42,20 @@ public class AiGeneratedVideo {
   @Column(nullable = false)
   private Long drivingVideoId;
   
-  @Setter
   @Column(length = 500)
   private String videoUrl;
-  
-  @Setter
+
   @Column(nullable = false, length = 20)
   @Enumerated(EnumType.STRING)
   @Builder.Default
   private VideoGenerationStatus status = VideoGenerationStatus.PENDING;
-  
-  @Setter
+
   @Column
   private LocalDateTime startedAt;
-  
-  @Setter
+
   @Column
   private LocalDateTime completedAt;
-  
-  @Setter
+
   @Column(columnDefinition = "TEXT")
   private String errorMessage;
   

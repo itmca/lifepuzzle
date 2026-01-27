@@ -4,7 +4,7 @@ import static io.itmca.lifepuzzle.global.constants.FileConstant.HERO_PROFILE_IMA
 import static io.itmca.lifepuzzle.global.constants.ServerConstant.S3_SERVER_HOST;
 
 import io.itmca.lifepuzzle.domain.hero.entity.Hero;
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import org.apache.commons.lang3.StringUtils;

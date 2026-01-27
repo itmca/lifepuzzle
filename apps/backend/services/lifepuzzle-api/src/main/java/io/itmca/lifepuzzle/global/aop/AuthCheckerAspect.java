@@ -2,7 +2,7 @@ package io.itmca.lifepuzzle.global.aop;
 
 import io.itmca.lifepuzzle.domain.auth.jwt.AuthPayload;
 import io.itmca.lifepuzzle.domain.hero.entity.HeroUserAuth;
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import io.itmca.lifepuzzle.domain.user.service.UserQueryService;
 import io.itmca.lifepuzzle.global.exception.HeroAccessDeniedException;
 import io.itmca.lifepuzzle.global.exception.MissingHeroNoException;

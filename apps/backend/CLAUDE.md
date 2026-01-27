@@ -55,6 +55,46 @@ tools/scripts/               # 개발 편의 스크립트
 
 ## 개발 패턴
 
+### 도메인 구조
+
+```
+domain/
+├── shared/          # 도메인 간 공유 타입 (최소화 유지)
+│   └── type/
+│       └── HeroAuthStatus.java
+├── hero/            # 주인공 도메인
+├── user/            # 사용자 도메인
+├── content/         # 콘텐츠 도메인 (Story, Gallery)
+├── ai/              # AI 기능 도메인
+└── auth/            # 인증 도메인
+```
+
+**의존성 규칙:**
+- `shared` → 다른 도메인 의존 금지
+- 각 도메인 → `shared` 의존 허용
+- 서비스 레이어 간 의존은 허용 (예: GalleryQueryService → HeroQueryService)
+
+### Entity 설계 원칙
+
+**Rich Domain Model 지향:**
+- `@Setter` 사용 금지 → 도메인 행위 메서드로 대체
+- 상태 변경은 의미 있는 메서드명 사용
+
+```java
+// ❌ Bad - Anemic Domain Model
+@Setter
+private GalleryStatus galleryStatus;
+
+// ✅ Good - Rich Domain Model
+public void markAsUploaded() {
+    this.galleryStatus = GalleryStatus.UPLOADED;
+}
+
+public void markAsFailed() {
+    this.galleryStatus = GalleryStatus.FAILED;
+}
+```
+
 ### Service 네이밍 규칙
 
 도메인 특성에 따라 다른 네이밍 패턴 적용:
@@ -79,6 +119,21 @@ RefreshService      - 토큰 갱신
 TokenIssueService   - 토큰 발급
 ValidateService     - 외부 토큰 검증 (Apple, Kakao)
 ```
+
+### Endpoint 네이밍 규칙
+
+Service 네이밍과 일관성 유지:
+
+| 도메인 | 패턴 | 예시 |
+|--------|------|------|
+| **content, hero, user** | CQRS | `GalleryQueryEndpoint`, `GalleryWriteEndpoint` |
+| **auth** | UseCase 중심 | `LoginEndpoint`, `RefreshEndpoint` |
+| **ai** | 통합 허용 | `AiVideoEndpoint` (소규모 도메인) |
+
+**원칙:**
+- 같은 Service를 사용하는 API는 하나의 Endpoint로 통합
+- Query(GET)와 Write(POST/PUT/PATCH/DELETE) 분리 권장
+- 소규모 도메인은 통합 허용
 
 ### Service 반환 규칙
 

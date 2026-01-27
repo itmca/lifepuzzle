@@ -1,7 +1,7 @@
 package io.itmca.lifepuzzle.domain.user.endpoint;
 
 import io.itmca.lifepuzzle.domain.hero.service.HeroValidationService;
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import io.itmca.lifepuzzle.domain.user.endpoint.request.UserRecentHeroRequest;
 import io.itmca.lifepuzzle.domain.user.endpoint.response.UserHeroShareResponse;
 import io.itmca.lifepuzzle.domain.user.entity.User;

@@ -4,7 +4,7 @@ import io.itmca.lifepuzzle.domain.hero.endpoint.request.HeroChangeAuthRequest;
 import io.itmca.lifepuzzle.domain.hero.entity.Hero;
 import io.itmca.lifepuzzle.domain.hero.entity.HeroUserAuth;
 import io.itmca.lifepuzzle.domain.hero.repository.HeroUserAuthRepository;
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import io.itmca.lifepuzzle.domain.user.entity.User;
 import io.itmca.lifepuzzle.domain.user.entity.UserHeroShare;
 import io.itmca.lifepuzzle.domain.user.repository.UserHeroShareRepository;
@@ -14,7 +14,6 @@ import io.itmca.lifepuzzle.global.exception.UserHeroShareExpiredDateException;
 import io.itmca.lifepuzzle.global.exception.UserHeroShareKeyNotFoundException;
 import io.itmca.lifepuzzle.global.exception.UserNotAccessibleToHeroException;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +33,7 @@ public class HeroUserAuthWriteService {
         .auth(heroAuthStatus)
         .build();
 
-    hero.setHeroUserAuths(Collections.singletonList(heroUserAuth));
+    hero.initializeAuth(heroUserAuth);
     return heroUserAuthRepository.save(heroUserAuth);
   }
 

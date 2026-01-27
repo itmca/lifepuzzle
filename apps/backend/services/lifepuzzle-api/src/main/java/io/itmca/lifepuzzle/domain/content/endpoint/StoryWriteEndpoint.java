@@ -1,8 +1,8 @@
 package io.itmca.lifepuzzle.domain.content.endpoint;
 
-import static io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus.ADMIN;
-import static io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus.OWNER;
-import static io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus.WRITER;
+import static io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus.ADMIN;
+import static io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus.OWNER;
+import static io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus.WRITER;
 
 import io.itmca.lifepuzzle.domain.auth.jwt.AuthPayload;
 import io.itmca.lifepuzzle.domain.content.endpoint.request.StoryContentUploadRequest;

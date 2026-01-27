@@ -1,11 +1,11 @@
 package io.itmca.lifepuzzle.domain.user.service;
 
-import static io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus.ADMIN;
-import static io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus.OWNER;
+import static io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus.ADMIN;
+import static io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus.OWNER;
 import static io.itmca.lifepuzzle.global.constants.FileConstant.USER_PROFILE_IMAGE_BASE_PATH_FORMAT;
 
 import io.itmca.lifepuzzle.domain.hero.entity.HeroUserAuth;
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import io.itmca.lifepuzzle.domain.user.endpoint.request.UserUpdateRequest;
 import io.itmca.lifepuzzle.domain.user.entity.User;
 import io.itmca.lifepuzzle.domain.user.entity.UserHeroShare;

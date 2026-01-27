@@ -16,7 +16,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.lang.Nullable;
@@ -32,15 +31,11 @@ public class Hero {
   @Column(name = "id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long heroNo;
-  @Setter
   private String name;
-  @Setter
   private String nickname;
-  @Setter
   private LocalDate birthdate;
   private String image;
 
-  @Setter
   @OneToMany(mappedBy = "hero")
   @Builder.Default
   private List<HeroUserAuth> heroUserAuths = new ArrayList<>();
@@ -57,7 +52,6 @@ public class Hero {
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
 
-  @Setter
   private Boolean isLunar;
 
   private String facebookUserId;
@@ -70,6 +64,18 @@ public class Hero {
         .isLunar(false)
         .image("")
         .build();
+  }
+
+  // 도메인 행위 메서드
+  public void updateInfo(String name, String nickname, LocalDate birthdate, Boolean isLunar) {
+    this.name = name;
+    this.nickname = nickname;
+    this.birthdate = birthdate;
+    this.isLunar = isLunar;
+  }
+
+  public void initializeAuth(HeroUserAuth heroUserAuth) {
+    this.heroUserAuths = java.util.Collections.singletonList(heroUserAuth);
   }
 
   public void setProfileImage(@Nullable HeroProfileImage heroProfileImage) {

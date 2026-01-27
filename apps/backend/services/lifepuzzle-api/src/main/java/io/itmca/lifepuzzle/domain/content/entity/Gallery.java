@@ -47,14 +47,11 @@ public class Gallery {
   private Long id;
   @Column(nullable = false)
   private Long heroId;
-  @Setter
   @Column(nullable = false)
   private String url;
-  @Setter
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private AgeGroup ageGroup;
-  @Setter
   private LocalDate date;
   @Column(name = "type", nullable = false)
   @Enumerated(EnumType.STRING)
@@ -69,7 +66,6 @@ public class Gallery {
   @Convert(converter = JsonListConverter.class)
   @Builder.Default
   private List<Integer> resizedSizes = new ArrayList<>();
-  @Setter
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   private GalleryStatus galleryStatus;
@@ -83,6 +79,24 @@ public class Gallery {
 
   @OneToMany(mappedBy = "gallery", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<StoryGallery> storyMaps;
+
+  // 도메인 행위 메서드
+  public void assignUrl(String url) {
+    this.url = url;
+  }
+
+  public void updateMetadata(AgeGroup ageGroup, LocalDate date) {
+    this.ageGroup = ageGroup;
+    this.date = date;
+  }
+
+  public void markAsUploaded() {
+    this.galleryStatus = GalleryStatus.UPLOADED;
+  }
+
+  public void markAsFailed() {
+    this.galleryStatus = GalleryStatus.FAILED;
+  }
 
   public static List<Gallery> listFrom(List<? extends CustomFile> galleryFiles, Long heroId,
                                        AgeGroup ageGroup, GalleryType galleryType) {

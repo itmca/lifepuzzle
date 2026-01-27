@@ -1,12 +1,12 @@
 package io.itmca.lifepuzzle.domain.hero.service;
 
-import static io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus.OWNER;
+import static io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus.OWNER;
 import static io.itmca.lifepuzzle.global.constants.FileConstant.HERO_PROFILE_IMAGE_BASE_PATH_FORMAT;
 
 import io.itmca.lifepuzzle.domain.hero.endpoint.request.HeroWriteRequest;
 import io.itmca.lifepuzzle.domain.hero.entity.Hero;
 import io.itmca.lifepuzzle.domain.hero.repository.HeroRepository;
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import io.itmca.lifepuzzle.domain.user.entity.User;
 import io.itmca.lifepuzzle.global.exception.HeroNotFoundException;
 import io.itmca.lifepuzzle.global.file.domain.HeroProfileImage;
@@ -70,10 +70,12 @@ public class HeroWriteService {
     var hero = heroRepository.findById(heroNo)
         .orElseThrow(() -> HeroNotFoundException.byHeroNo(heroNo));
 
-    hero.setName(heroWriteRequest.name());
-    hero.setNickname(heroWriteRequest.nickName());
-    hero.setBirthdate(heroWriteRequest.birthday());
-    hero.setIsLunar(heroWriteRequest.isLunar());
+    hero.updateInfo(
+        heroWriteRequest.name(),
+        heroWriteRequest.nickName(),
+        heroWriteRequest.birthday(),
+        heroWriteRequest.isLunar()
+    );
 
     var isProfileImageUpdate = heroWriteRequest.profileImageUpdate();
 
