@@ -20,7 +20,7 @@ flyway = "11.15.0"
 junit-platform = "1.11.4"
 testcontainers = "1.21.3"
 database-rider = "1.44.0"
-fixture-monkey = "1.1.11"
+fixture-monkey = "1.1.15"
 mysql-connector-legacy = "8.0.33"
 javax-persistence = "2.2"
 
