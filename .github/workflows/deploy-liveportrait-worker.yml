@@ -1,0 +1,93 @@
+name: Deploy to Production (liveportrait-worker)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: SSH into Home Server and Deploy
+        uses: appleboy/ssh-action@v1.2.4
+        with:
+          host: ${{ secrets.HOME_SERVER_HOST }}
+          username: ${{ secrets.HOME_SERVER_USER }}
+          key: ${{ secrets.HOME_SERVER_SSH_KEY }}
+          port: 2022
+          script: |
+            echo "=== Deploying liveportrait-worker ==="
+
+            REPO_PATH="${{ secrets.LIVEPORTRAIT_REPO_PATH }}"
+            WORKER_DIR="${REPO_PATH}/apps/backend/services/liveportrait-worker"
+            SERVICE_PLIST="${{ secrets.LIVEPORTRAIT_SERVICE_PLIST }}"
+            LOG_DIR="${{ secrets.LIVEPORTRAIT_LOG_DIR }}"
+
+            # Pull latest code
+            echo "Pulling latest code..."
+            cd "$REPO_PATH"
+            git fetch origin main
+            git checkout main
+            git pull origin main
+
+            # Update .env file with secrets
+            echo "Updating .env file..."
+            cd "$WORKER_DIR"
+            cat > .env << ENVEOF
+            # RabbitMQ
+            RABBITMQ_HOST=127.0.0.1
+            RABBITMQ_PORT=5672
+            RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
+            RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
+            RABBITMQ_VHOST=/
+            QUEUE_NAME=gallery.ai.video.create.ai-video-generator
+
+            # Database
+            DB_HOST=127.0.0.1
+            DB_PORT=3306
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USER=${{ secrets.DB_PROD_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PROD_PASSWORD }}
+
+            # AWS S3
+            AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+            AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+            AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+
+            # LivePortrait paths
+            LIVEPORTRAIT_PATH=${{ secrets.LIVEPORTRAIT_ENGINE_PATH }}
+            CONDA_ENV=LivePortrait
+            DOWNLOAD_PATH=/var/tmp/ai_video_download
+            OUTPUT_PATH=/var/tmp/ai_video
+            ENVEOF
+
+            # Remove leading whitespace from .env (caused by YAML indentation)
+            sed -i '' 's/^[[:space:]]*//' .env
+
+            # Restart launchd service
+            echo "Restarting service..."
+            launchctl unload "$SERVICE_PLIST" 2>/dev/null || true
+            sleep 2
+            launchctl load "$SERVICE_PLIST"
+
+            # Verify service is running
+            echo "Verifying service status..."
+            sleep 3
+            SERVICE_NAME=$(basename "$SERVICE_PLIST" .plist)
+            if launchctl list | grep -q "$SERVICE_NAME"; then
+              echo "Service is running"
+              echo "Recent logs:"
+              tail -10 "${LOG_DIR}/worker.log" 2>/dev/null || echo "(no logs yet)"
+            else
+              echo "Failed to start service"
+              echo "Error logs:"
+              tail -20 "${LOG_DIR}/worker.error.log" 2>/dev/null || echo "(no error logs)"
+              exit 1
+            fi
+
+            echo "=== Deployment completed successfully! ==="
