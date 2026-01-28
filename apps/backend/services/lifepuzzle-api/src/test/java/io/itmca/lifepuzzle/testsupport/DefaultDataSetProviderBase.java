@@ -3,7 +3,7 @@ package io.itmca.lifepuzzle.testsupport;
 import com.github.database.rider.core.api.dataset.DataSetProvider;
 import com.github.database.rider.core.configuration.DBUnitConfig;
 import com.github.database.rider.core.dataset.builder.DataSetBuilder;
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

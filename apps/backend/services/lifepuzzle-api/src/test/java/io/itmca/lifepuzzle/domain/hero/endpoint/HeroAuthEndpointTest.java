@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
 import com.github.database.rider.core.dataset.builder.DataSetBuilder;
-import io.itmca.lifepuzzle.domain.hero.type.HeroAuthStatus;
+import io.itmca.lifepuzzle.domain.shared.type.HeroAuthStatus;
 import io.itmca.lifepuzzle.testsupport.DefaultDataSetProviderBase;
 import io.itmca.lifepuzzle.testsupport.IntegrationTestBase;
 import org.junit.jupiter.api.DisplayName;
