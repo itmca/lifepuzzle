@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Dimensions, TouchableOpacity, View } from 'react-native';
 import { PageContainer } from '../../../components/ui/layout/PageContainer';
-import {
-  ContentContainer,
-  ScrollContentContainer,
-} from '../../../components/ui/layout/ContentContainer.tsx';
+import { ContentContainer } from '../../../components/ui/layout/ContentContainer.tsx';
+import { ScrollContainer } from '../../../components/ui/layout/ScrollContainer';
 import { Color } from '../../../constants/color.constant.ts';
 import {
   BodyTextB,
@@ -39,7 +37,14 @@ const AiPhotoWorkHistoryPage = (): React.ReactElement => {
   const [completedItems, setCompletedItems] = useState<AiGeneratedVideo[]>([]);
 
   // Custom hooks
-  const { generatedVideos } = useAiGeneratedVideos();
+  const { generatedVideos, isLoading, refetch } = useAiGeneratedVideos();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   // Derived value or local variables
   const screenWidth = Dimensions.get('window').width;
@@ -128,8 +133,8 @@ const AiPhotoWorkHistoryPage = (): React.ReactElement => {
   }, [generatedVideos]);
 
   return (
-    <PageContainer edges={['left', 'right', 'bottom']}>
-      <ScrollContentContainer>
+    <PageContainer edges={['left', 'right', 'bottom']} isLoading={isLoading}>
+      <ScrollContainer onRefresh={handleRefresh} refreshing={refreshing}>
         <ContentContainer withContentPadding paddingVertical={24} gap={32}>
           <ContentContainer paddingTop={8}>
             <BodyTextM color={Color.GREY_500}>
@@ -166,7 +171,7 @@ const AiPhotoWorkHistoryPage = (): React.ReactElement => {
             </View>
           </ContentContainer>
         </ContentContainer>
-      </ScrollContentContainer>
+      </ScrollContainer>
     </PageContainer>
   );
 };
