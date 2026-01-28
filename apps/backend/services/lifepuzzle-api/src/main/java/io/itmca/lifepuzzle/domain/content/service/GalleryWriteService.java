@@ -4,13 +4,13 @@ import static io.itmca.lifepuzzle.domain.content.type.GalleryType.IMAGE;
 import static io.itmca.lifepuzzle.domain.content.type.GalleryType.VIDEO;
 import static io.itmca.lifepuzzle.global.constants.FileConstant.NEW_STORY_IMAGE_BASE_PATH_FORMAT;
 
+import io.itmca.lifepuzzle.domain.content.entity.Gallery;
+import io.itmca.lifepuzzle.domain.content.event.PhotoUploadEventPublisher;
+import io.itmca.lifepuzzle.domain.content.repository.GalleryRepository;
 import io.itmca.lifepuzzle.domain.content.service.dto.PresignedUrlResult;
 import io.itmca.lifepuzzle.domain.content.service.dto.PresignedUrlResult.PresignedUrlItem;
 import io.itmca.lifepuzzle.domain.content.service.dto.UploadCompletionResult;
 import io.itmca.lifepuzzle.domain.content.service.dto.UploadCompletionResult.GalleryResult;
-import io.itmca.lifepuzzle.domain.content.entity.Gallery;
-import io.itmca.lifepuzzle.domain.content.event.PhotoUploadEventPublisher;
-import io.itmca.lifepuzzle.domain.content.repository.GalleryRepository;
 import io.itmca.lifepuzzle.domain.content.type.AgeGroup;
 import io.itmca.lifepuzzle.domain.content.type.GallerySource;
 import io.itmca.lifepuzzle.domain.content.type.GalleryStatus;
