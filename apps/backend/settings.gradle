@@ -1,5 +1,8 @@
 rootProject.name = 'lifepuzzle-backend'
 
 include 'shared:java-common'
-include 'services:lifepuzzle-api'
-include 'services:ai-video-generator'
+
+// Only include projects that exist (for Docker builds)
+if (file('services/lifepuzzle-api').isDirectory()) {
+    include 'services:lifepuzzle-api'
+}

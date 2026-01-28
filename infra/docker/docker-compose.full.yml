@@ -51,7 +51,7 @@ services:
   # Application Services
   lifepuzzle-api:
     build:
-      context: ../../
+      context: ../../apps/backend
       dockerfile: services/lifepuzzle-api/Dockerfile
     container_name: lifepuzzle-api
     env_file:
@@ -135,7 +135,7 @@ services:
 
   image-resizer:
     build:
-      context: ../../
+      context: ../../apps/backend
       dockerfile: services/image-resizer/Dockerfile
     container_name: lifepuzzle-image-resizer
     env_file:
@@ -147,16 +147,16 @@ services:
       DB_NAME: lifepuzzle
       DB_USER: lifepuzzle
       DB_PASSWORD: lifepuzzlepass
-      
+
       # RabbitMQ configuration
       RABBITMQ_URL: amqp://lifepuzzle:lifepuzzlepass@rabbitmq:5672/lifepuzzle
-      
+
       # AWS S3 configuration (set these in .env file)
       AWS_REGION: ${AWS_REGION}
       AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
       AWS_SECRET_KEY: ${AWS_SECRET_KEY}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
-      
+
       # Application configuration
       PORT: 9000
       LOG_LEVEL: info
@@ -176,6 +176,13 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  # AI Video Generator is now handled by liveportrait-worker (Python)
+  # Run it natively on the host machine for MPS acceleration:
+  #   cd apps/backend/services/liveportrait-worker
+  #   conda activate LivePortrait
+  #   python main.py
+  # See: apps/backend/services/liveportrait-worker/README.md
 
 volumes:
   mysql_data:
