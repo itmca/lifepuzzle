@@ -18,7 +18,7 @@ flyway = "11.15.0"
 
 # Testing
 junit-platform = "1.11.4"
-testcontainers = "1.21.3"
+testcontainers = "1.21.4"
 database-rider = "1.44.0"
 fixture-monkey = "1.1.11"
 mysql-connector-legacy = "8.0.33"
