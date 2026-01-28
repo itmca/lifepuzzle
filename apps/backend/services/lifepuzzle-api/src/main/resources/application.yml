@@ -52,9 +52,6 @@ spring:
         static: ${AWS_REGION:ap-northeast-2}
       stack:
         auto: false
-    deepgram:
-      credentials:
-        acessKey: ${DEEPGRAM_ACCESS_KEY:}
     stream:
       rabbit:
         binder:
@@ -119,14 +116,6 @@ sentry:
 
 slack:
   webhook-url: ${SLACK_WEBHOOK_URL:}
-
-api:
-  chat-gpt:
-    uri: ${OPENAI_API_URI:https://api.openai.com/v1}
-    key: ${OPENAI_API_KEY:}
-  deepgram:
-    uri: ${DEEPGRAM_API_URI:https://api.deepgram.com}
-    key: ${DEEPGRAM_API_KEY:}
 
 apple:
   team-id: ${APPLE_TEAM_ID:}

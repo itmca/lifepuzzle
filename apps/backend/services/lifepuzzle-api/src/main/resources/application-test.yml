@@ -38,10 +38,6 @@ spring:
         static: us-east-1
       stack:
         auto: false
-    deepgram:
-      credentials:
-        acessKey: test-deepgram-key
-
 springdoc:
   packages-to-scan: io.itmca.lifepuzzle.domain
   default-consumes-media-type: application/json;charset=UTF-8
@@ -60,14 +56,6 @@ sentry:
 
 slack:
   webhook-url: https://hooks.slack.com/test
-
-api:
-  chat-gpt:
-    uri: https://api.openai.com/v1/chat/completions
-    key: test-openai-key
-  deepgram:
-    uri: https://api.deepgram.com/v1
-    key: test-deepgram-key
 
 apple:
   team-id: TEST123456
