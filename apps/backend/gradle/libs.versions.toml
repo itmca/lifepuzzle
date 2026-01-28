@@ -17,6 +17,7 @@ sentry = "8.20.0"
 flyway = "11.15.0"
 
 # Testing
+junit-platform = "1.11.4"
 testcontainers = "1.21.3"
 database-rider = "1.44.0"
 fixture-monkey = "1.1.11"
@@ -68,6 +69,7 @@ flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-mysql = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
 
 # Testing
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
 testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
 database-rider-junit5 = { module = "com.github.database-rider:rider-junit5", version.ref = "database-rider" }

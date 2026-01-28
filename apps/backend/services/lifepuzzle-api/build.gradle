@@ -65,6 +65,7 @@ dependencies {
 
     // Test
     testImplementation libs.spring.boot.starter.test
+    testRuntimeOnly libs.junit.platform.launcher
     testImplementation libs.spring.security.test
     testImplementation libs.fixture.monkey
 
