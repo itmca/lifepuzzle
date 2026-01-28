@@ -58,14 +58,12 @@ jobs:
           port: 2022
           script: |
             echo "Deploying image-resizer with Helm..."
-            cd /Users/jeong/workspace/lifepuzzle
-            git pull origin main
-            cd infra/helm
-            /opt/homebrew/bin/kubectl config use-context prod-app
+            /opt/homebrew/bin/kubectl config use-context colima-prod
+
+            cd /Users/jeong/workspace/homelab/charts
 
             /opt/homebrew/bin/helm upgrade --install lifepuzzle-image-resizer ./lifepuzzle-image-resizer \
-              --namespace lifepuzzle \
-              --create-namespace \
+              --namespace app \
               --values ./lifepuzzle-image-resizer/values-prod.yaml \
               --set image.repository="ghcr.io/itmca/lifepuzzle-image-resizer" \
               --set image.tag="${{ steps.current-time.outputs.formattedTime }}" \
@@ -84,7 +82,7 @@ jobs:
               --set env.RABBITMQ_HOST="lifepuzzle-rabbitmq" \
               --set env.RABBITMQ_PORT="5672" \
               --set env.RABBITMQ_USERNAME="${{ secrets.RABBITMQ_USERNAME }}" \
-              --set env.RABBITMQ_VHOST="lifepuzzle" \
+              --set env.RABBITMQ_VHOST="/" \
               --set env.AWS_REGION="${{ secrets.AWS_REGION }}" \
               --set env.AWS_S3_BUCKET="${{ secrets.AWS_S3_BUCKET }}" \
               --set env.PORT="9000" \

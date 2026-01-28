@@ -33,16 +33,6 @@ jobs:
         run: ./gradlew clean build
         env: ${{ secrets }}
 
-      - name: Get current time
-        uses: josStorer/get-current-time@v2.1.2
-        id: current-time
-        with:
-          format: YYYY-MM-DDTHH-mm-ss
-          utcOffset: "+09:00"
-
-      - name: Set artifact
-        run: echo "artifact=$(ls ./build/libs/*.jar)" >> $GITHUB_ENV
-
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -56,37 +46,9 @@ jobs:
           context: apps/backend
           file: apps/backend/services/lifepuzzle-api/Dockerfile
           push: true
-          build-args: |
-            DB_PROD_URL=${{ secrets.DB_PROD_URL }}
-            DB_PROD_USERNAME=${{ secrets.DB_PROD_USERNAME }}
-            DB_PROD_PASSWORD=${{ secrets.DB_PROD_PASSWORD }}
-            RABBITMQ_HOST=lifepuzzle-rabbitmq
-            RABBITMQ_PORT=5672
-            RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
-            RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
-            MAIL_HOST=smtp.gmail.com
-            MAIL_PORT=587
-            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
-            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-            AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
-            AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
-            AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
-            AWS_REGION=${{ secrets.AWS_REGION }}
-            DEEPGRAM_ACCESS_KEY=${{ secrets.DEEPGRAM_ACCESS_KEY }}
-            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-            SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}
-            OPENAI_API_URI=https://api.openai.com/v1/chat/completions
-            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-            DEEPGRAM_API_URI=https://api.deepgram.com/v1/listen?model=base&smart_format=true&language=ko&punctuate=true&numerals=true
-            DEEPGRAM_API_KEY=${{ secrets.DEEPGRAM_API_KEY }}
-            APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}
-            APPLE_BUNDLE_ID=${{ secrets.APPLE_BUNDLE_ID }}
-            APPLE_PRIVATE_KEY_ID=${{ secrets.APPLE_PRIVATE_KEY_ID }}
-            APPLE_PRIVATE_KEY=${{ secrets.APPLE_PRIVATE_KEY }}
-            S3_SERVER_HOST=${{ secrets.S3_SERVER_HOST }}
           tags: ghcr.io/itmca/lifepuzzle-api:latest
 
-      - name: SSH into Home Server and Restart Deployment
+      - name: SSH into Home Server and Deploy
         uses: appleboy/ssh-action@v1.2.4
         with:
           host: ${{ secrets.HOME_SERVER_HOST }}
@@ -94,7 +56,40 @@ jobs:
           key: ${{ secrets.HOME_SERVER_SSH_KEY }}
           port: 2022
           script: |
-            echo "Restarting deployment..."
-            /opt/homebrew/bin/kubectl config use-context prod-app
-            /opt/homebrew/bin/kubectl rollout restart deployment/lifepuzzle
-            /opt/homebrew/bin/kubectl rollout status deployment/lifepuzzle
+            echo "Updating K8s Secret and restarting deployment..."
+            /opt/homebrew/bin/kubectl config use-context colima-prod
+
+            # Create/update secret with all environment variables
+            /opt/homebrew/bin/kubectl -n app create secret generic lifepuzzle-secret \
+              --from-literal=DB_PROD_URL='${{ secrets.DB_PROD_URL }}' \
+              --from-literal=DB_PROD_USERNAME='${{ secrets.DB_PROD_USERNAME }}' \
+              --from-literal=DB_PROD_PASSWORD='${{ secrets.DB_PROD_PASSWORD }}' \
+              --from-literal=RABBITMQ_HOST='lifepuzzle-rabbitmq' \
+              --from-literal=RABBITMQ_PORT='5672' \
+              --from-literal=RABBITMQ_USERNAME='${{ secrets.RABBITMQ_USERNAME }}' \
+              --from-literal=RABBITMQ_PASSWORD='${{ secrets.RABBITMQ_PASSWORD }}' \
+              --from-literal=MAIL_HOST='smtp.gmail.com' \
+              --from-literal=MAIL_PORT='587' \
+              --from-literal=MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}' \
+              --from-literal=MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}' \
+              --from-literal=AWS_ACCESS_KEY='${{ secrets.AWS_ACCESS_KEY }}' \
+              --from-literal=AWS_SECRET_KEY='${{ secrets.AWS_SECRET_KEY }}' \
+              --from-literal=AWS_S3_BUCKET='${{ secrets.AWS_S3_BUCKET }}' \
+              --from-literal=AWS_REGION='${{ secrets.AWS_REGION }}' \
+              --from-literal=DEEPGRAM_ACCESS_KEY='${{ secrets.DEEPGRAM_ACCESS_KEY }}' \
+              --from-literal=SENTRY_DSN='${{ secrets.SENTRY_DSN }}' \
+              --from-literal=SLACK_WEBHOOK_URL='${{ secrets.SLACK_WEBHOOK_URL }}' \
+              --from-literal=OPENAI_API_URI='https://api.openai.com/v1/chat/completions' \
+              --from-literal=OPENAI_API_KEY='${{ secrets.OPENAI_API_KEY }}' \
+              --from-literal=DEEPGRAM_API_URI='https://api.deepgram.com/v1/listen?model=base&smart_format=true&language=ko&punctuate=true&numerals=true' \
+              --from-literal=DEEPGRAM_API_KEY='${{ secrets.DEEPGRAM_API_KEY }}' \
+              --from-literal=APPLE_TEAM_ID='${{ secrets.APPLE_TEAM_ID }}' \
+              --from-literal=APPLE_BUNDLE_ID='${{ secrets.APPLE_BUNDLE_ID }}' \
+              --from-literal=APPLE_PRIVATE_KEY_ID='${{ secrets.APPLE_PRIVATE_KEY_ID }}' \
+              --from-literal=APPLE_PRIVATE_KEY='${{ secrets.APPLE_PRIVATE_KEY }}' \
+              --from-literal=S3_SERVER_HOST='${{ secrets.S3_SERVER_HOST }}' \
+              --dry-run=client -o yaml | /opt/homebrew/bin/kubectl apply -f -
+
+            # Restart deployment to pick up new image and secrets
+            /opt/homebrew/bin/kubectl -n app rollout restart deployment/lifepuzzle
+            /opt/homebrew/bin/kubectl -n app rollout status deployment/lifepuzzle

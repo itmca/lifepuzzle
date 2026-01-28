@@ -58,7 +58,14 @@ class RabbitMQConsumer:
 
         # Declare queue (in case it doesn't exist)
         # This should match the Spring Cloud Stream configuration
-        self.channel.queue_declare(queue=queue_name, durable=True)
+        self.channel.queue_declare(
+            queue=queue_name,
+            durable=True,
+            arguments={
+                "x-dead-letter-exchange": "DLX",
+                "x-dead-letter-routing-key": queue_name,
+            },
+        )
 
         self.channel.basic_consume(
             queue=queue_name,
